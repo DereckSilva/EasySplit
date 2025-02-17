@@ -7,7 +7,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SlugService } from 'src/slug/slug.service';
 import { UserService } from 'src/user/user.service';
-import { ErrorFoundUser, ErrorRemoveExpense } from 'src/errors/errors';
+import {
+  ErrorFoundExpense,
+  ErrorFoundUser,
+  ErrorRemoveExpense,
+} from 'src/errors/errors';
 
 @Injectable()
 export class ExpenseService {
@@ -65,6 +69,10 @@ export class ExpenseService {
       throw new ErrorFoundUser();
     }
     this.eventEmitter.emit('expense.updated', { id, updateExpenseDto });
+    const expenseOld = await this.findOne(id)[0];
+    if (expenseOld == 'undefined' || expenseOld == null) {
+      throw new ErrorFoundExpense();
+    }
     const expense = await this.expenseModel.updateOne(
       { id: id },
       {
@@ -78,6 +86,10 @@ export class ExpenseService {
 
   async remove(id: string) {
     try {
+      const expense = await this.findOne(id)[0];
+      if (expense == 'undefined' || expense == null) {
+        throw new ErrorFoundExpense();
+      }
       await this.expenseModel.deleteOne({ _id: id });
       return true;
     } catch (error) {

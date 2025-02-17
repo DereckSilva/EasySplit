@@ -61,8 +61,8 @@ export class UserController {
   }
 
   @Get('all')
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    return await this.userService.findAll();
   }
 
   @Get('one')
@@ -107,7 +107,7 @@ export class UserController {
     ];
   }
 
-  @Delete(':email')
+  @Delete('remove/:email')
   @UsePipes(new ValidationPipe())
   async remove(@Param('email') email: string) {
     const user = await this.userService.findOne(email);

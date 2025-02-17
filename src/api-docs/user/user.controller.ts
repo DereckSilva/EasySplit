@@ -18,7 +18,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserService } from 'src/user/user.service';
-import { UpdateUserDto } from 'src/user/dto/update-user.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserModel } from './model/user.model';
 import { UpdatePasswordDto } from 'src/user/dto/update-password.dto';
@@ -43,11 +42,11 @@ export class UserController {
     return await this.userService.create(createUser);
   }
 
-  @Get(':email')
+  @Get('one/:email')
   @ApiOperation({ summary: 'Busca um usuário específico.' })
   @ApiResponse({
     status: HttpStatus.FOUND,
-    description: 'Busca um usuário.',
+    description: 'Usuário encontrado com sucesso.',
     type: UserModel,
   })
   @UsePipes(new ValidationPipe())
@@ -55,27 +54,45 @@ export class UserController {
     return await this.userService.findOne(email);
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Busca todos os usuários.' })
+  @ApiResponse({
+    status: HttpStatus.FOUND,
+    description: 'Usuários encontrados com sucesso.',
+    type: UserModel,
+  })
+  @UsePipes(new ValidationPipe())
+  async findAll() {
+    return await this.userService.findAll();
+  }
+
   @Patch(':email')
   @ApiOperation({ summary: 'Atualiza os dados de um usuário.' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Atualiza os dados de um usuário.',
+    description: 'Dados atualizados com sucesso.',
     type: UserModel,
   })
   @ApiBearerAuth()
   @UsePipes(new ValidationPipe())
   async updateUser(
     @Param('email') email: string,
-    @Body() updateUser: UpdateUserDto,
+    @Body() updateUser: CreateUserDto,
   ) {
     return await this.userService.update(email, updateUser);
   }
 
-  @Patch()
+  @Patch('update-password')
   @ApiOperation({ summary: 'Atualiza a senha do usuário' })
   @ApiResponse({
-    status: 200,
-    description: 'Atualização realizada com sucesso',
+    status: HttpStatus.OK,
+    description: 'Atualização de senha realizada com sucesso',
+    example: [
+      {
+        status: HttpStatus.OK,
+        data: [],
+      },
+    ],
   })
   @UsePipes(new ValidationPipe())
   async udatePassword(@Body() updatePassword: UpdatePasswordDto) {
@@ -86,13 +103,12 @@ export class UserController {
     return await this.userService.updatePassword(user[0], updatePassword);
   }
 
-  @Delete(':id')
+  @Delete('remove/:id')
   @ApiOperation({ summary: 'Remove um usuário' })
   @ApiBearerAuth()
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Usuário removido com sucesso',
-
     example: [
       {
         status: HttpStatus.OK,

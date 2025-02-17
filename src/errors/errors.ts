@@ -39,6 +39,12 @@ export class ErrorRemoveExpense extends Error {
   }
 }
 
+export class ErrorFoundExpense extends Error {
+  constructor() {
+    super('Nenhuma conta foi encontrada para o usuário');
+  }
+}
+
 export class ErrorEmptyIntermediary extends Error {
   constructor() {
     super('Deve-se inserir o ID do terceiro da conta');
