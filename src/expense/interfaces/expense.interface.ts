@@ -1,7 +1,7 @@
 import { Document } from 'mongoose';
 
 export interface Expense extends Document {
-  readonly name: string;
+  readonly description: string;
   readonly price: number;
   readonly parcels: number;
   readonly payeeId: string;

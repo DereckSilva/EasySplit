@@ -1,3 +1,7 @@
+/**
+ * Errors User
+ */
+
 export class ErrorInvalidPassword extends Error {
   constructor() {
     super('Senha inválida');
@@ -33,6 +37,11 @@ export class ErrorRemoveUser extends Error {
     super('Houve um erro ao remover um usuário');
   }
 }
+
+/**
+ * Errors Expense
+ */
+
 export class ErrorRemoveExpense extends Error {
   constructor() {
     super('Houve um erro ao remover uma conta');
@@ -42,6 +51,24 @@ export class ErrorRemoveExpense extends Error {
 export class ErrorFoundExpense extends Error {
   constructor() {
     super('Nenhuma conta foi encontrada para o usuário');
+  }
+}
+
+export class ErrorDatePayment extends Error {
+  constructor() {
+    super('A data de pagamento é inválida');
+  }
+}
+
+export class ErrorIntermediary extends Error {
+  constructor() {
+    super('Não é permitido um terceiro para essa conta');
+  }
+}
+
+export class ErrorOldDatePayment extends Error {
+  constructor() {
+    super('A data de pagamento não pode ser menor que a data atual');
   }
 }
 

@@ -8,8 +8,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SlugService } from 'src/slug/slug.service';
 import { UserService } from 'src/user/user.service';
 import {
+  ErrorDatePayment,
+  ErrorEmptyIntermediary,
   ErrorFoundExpense,
   ErrorFoundUser,
+  ErrorOldDatePayment,
   ErrorRemoveExpense,
 } from 'src/errors/errors';
 
@@ -24,14 +27,19 @@ export class ExpenseService {
 
   async create(createExpenseDto: CreateExpenseDto) {
     const user = await this.userService.findOne(createExpenseDto.payeeId)[0];
-    if (typeof user === 'undefined' || user == null) {
+    if (user == null) {
       throw new ErrorFoundUser();
     }
+
+    createExpenseDto.maturityPayment = this.defineMaturityDate(
+      createExpenseDto.datePayment.toString(),
+      createExpenseDto.parcels,
+    );
 
     createExpenseDto = {
       ...createExpenseDto,
       slug: this.slugService.createSlug(
-        `${createExpenseDto.name} ${createExpenseDto.datePayment}`,
+        `${createExpenseDto.description} ${createExpenseDto.datePayment}`,
       ),
     };
 
@@ -70,7 +78,7 @@ export class ExpenseService {
     }
     this.eventEmitter.emit('expense.updated', { id, updateExpenseDto });
     const expenseOld = await this.findOne(id)[0];
-    if (expenseOld == 'undefined' || expenseOld == null) {
+    if (expenseOld == null) {
       throw new ErrorFoundExpense();
     }
     const expense = await this.expenseModel.updateOne(
@@ -87,7 +95,7 @@ export class ExpenseService {
   async remove(id: string) {
     try {
       const expense = await this.findOne(id)[0];
-      if (expense == 'undefined' || expense == null) {
+      if (expense == null) {
         throw new ErrorFoundExpense();
       }
       await this.expenseModel.deleteOne({ _id: id });
@@ -96,5 +104,43 @@ export class ExpenseService {
       console.log(error);
       throw new ErrorRemoveExpense();
     }
+  }
+
+  findExpense(id: string) {
+    const expense = this.findOne(id)[0];
+    if (expense === null) {
+      throw new ErrorFoundExpense();
+    }
+  }
+
+  verifierIntermediary(createExpenseDto: CreateExpenseDto | UpdateExpenseDto) {
+    const intermediaryIds = createExpenseDto.intermediaryIds.filter(
+      (value) => value !== null || value !== undefined,
+    );
+
+    if (createExpenseDto.intermediary && intermediaryIds.length === 0) {
+      throw new ErrorEmptyIntermediary();
+    }
+  }
+
+  defineMaturityDate(datePayment: string, parcels: number) {
+    const currentDateMilliseconds = Date.now();
+    const currentDate = new Date(currentDateMilliseconds);
+
+    if (new Date(datePayment).toString() === 'Invalid Date') {
+      throw new ErrorDatePayment();
+    }
+
+    if (currentDateMilliseconds > Date.parse(datePayment)) {
+      throw new ErrorOldDatePayment();
+    }
+
+    const maturityPayment = new Date(datePayment);
+    maturityPayment.setDate(maturityPayment.getDate() + 1);
+    maturityPayment.setMonth(maturityPayment.getMonth() + parcels);
+    maturityPayment.setHours(currentDate.getHours() - 3);
+    maturityPayment.setMinutes(currentDate.getMinutes());
+    maturityPayment.setSeconds(currentDate.getSeconds());
+    return maturityPayment;
   }
 }

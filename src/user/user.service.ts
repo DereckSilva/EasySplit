@@ -61,7 +61,7 @@ export class UserService {
 
   async update(email: string, updateUserDto: UpdateUserDto) {
     const user = (await this.findOne(email))[0];
-    if (typeof user === 'undefined' || user == null) {
+    if (user == null) {
       throw new ErrorFoundUser();
     }
 

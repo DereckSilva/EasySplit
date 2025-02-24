@@ -1,5 +1,11 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsDate, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 export class CreateExpenseDto extends PartialType(CreateUserDto) {
@@ -8,21 +14,32 @@ export class CreateExpenseDto extends PartialType(CreateUserDto) {
   @MinLength(10, {
     message: 'A descrição da conta precisa ter no mínimo 10 caracteres',
   })
-  name: string;
+  description: string;
 
   @IsNotEmpty({ message: 'O preço é obrigatório' })
+  @IsNumber()
   price: number;
 
   @IsNotEmpty({ message: 'O número de parcelas é obrigatório' })
+  @IsNumber()
   parcels: number;
 
-  payeeId: string;
-  intermediary: boolean;
-  intermediaryIds: [string];
-
   @IsNotEmpty({ message: 'A data de pagamento é obrigatória' })
-  @IsDate()
   datePayment: Date;
 
+  @IsNotEmpty({ message: 'O intermediário é obrigatório' })
+  @IsIn([true, false], {
+    message: 'Informe se a conta possui ou não intermediário',
+  })
+  intermediary: boolean;
+
+  @IsNotEmpty({ message: 'O ID do pagador não pode ser vazio' })
+  @IsString({ message: 'Informe o ID do pagador' })
+  payeeId: string;
+
+  user: { CreateUserDto: CreateUserDto };
+
+  intermediaryIds: [string];
+  maturityPayment: Date;
   slug: string;
 }

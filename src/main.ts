@@ -12,6 +12,9 @@ import { ErrorRemoveExpenseFilter } from './filters/error-remove-expense.filter'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule as AppModuleApi } from './api-docs/app.module';
 import { ErrorFoundExpenseFilter } from './filters/error-found-expense.filter';
+import { ErrorIntermediaryFilter } from './filters/error-intermediary-expense.filter';
+import { ErrorOldDatePaymentFilter } from './filters/error-old-date-expense.filter';
+import { ErrorDatePaymentFilter } from './filters/error-date-expense.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +31,9 @@ async function bootstrap() {
     new ErrorEmptyIntermediaryFilter(),
     new ErrorRemoveExpenseFilter(),
     new ErrorFoundExpenseFilter(),
+    new ErrorOldDatePaymentFilter(),
+    new ErrorDatePaymentFilter(),
+    new ErrorIntermediaryFilter(),
   );
   appSwagger.useGlobalFilters(
     new ErrorFoundUserFilter(),
@@ -39,6 +45,9 @@ async function bootstrap() {
     new ErrorEmptyIntermediaryFilter(),
     new ErrorRemoveExpenseFilter(),
     new ErrorFoundExpenseFilter(),
+    new ErrorOldDatePaymentFilter(),
+    new ErrorDatePaymentFilter(),
+    new ErrorIntermediaryFilter(),
   );
 
   // validação para aplicação e api

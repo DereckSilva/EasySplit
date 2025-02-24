@@ -53,10 +53,10 @@ export class CreateUserDto {
   })
   recipients: (typeof ExpenseSchema)[];
 
-  slug: string;
-
   @IsString({ message: 'A função precisa ser uma string' })
   @IsNotEmpty({ message: 'Necessário informar a função do usuário' })
   @IsIn(['user', 'admin'], { message: 'Função inválida' })
   role: string;
+
+  slug: string;
 }

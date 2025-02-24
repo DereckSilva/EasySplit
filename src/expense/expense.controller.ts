@@ -17,8 +17,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { fromEvent, map, Observable } from 'rxjs';
 import { Expense } from './interfaces/expense.interface';
 import { AuthGuard } from 'src/auth/auth.guards';
-import { ErrorEmptyIntermediary } from 'src/errors/errors';
 import { UserController } from 'src/user/user.controller';
+import { Public } from 'src/decorator/is-public.decorator';
 
 @UseGuards(AuthGuard)
 @Controller('expense')
@@ -30,32 +30,35 @@ export class ExpenseController {
   ) {}
 
   @Post()
+  @Public()
   async create(@Body() createExpenseDto: CreateExpenseDto) {
-    const intermediaryIds = createExpenseDto.intermediaryIds.filter(
-      (value) => value !== null || value !== undefined,
-    );
-
-    if (createExpenseDto.intermediary && intermediaryIds.length === 0) {
-      throw new ErrorEmptyIntermediary();
+    if (createExpenseDto.intermediary) {
+      this.expenseService.verifierIntermediary(createExpenseDto);
     }
 
-    for (const i of createExpenseDto.intermediaryIds) {
-      const intermediaryId = createExpenseDto.intermediaryIds[i];
-      const intermediary = await this.userController.findOne({
-        intermediaryId,
-      })[0];
-      if (typeof intermediary === 'undefined' || intermediary == null) {
-        const newUser = {
-          name: createExpenseDto.name,
-          email: createExpenseDto.email,
-          password: createExpenseDto.password,
-          recipients: createExpenseDto.recipients,
-          slug: createExpenseDto.slug,
-          role: createExpenseDto.role,
-        };
+    if (
+      'intermediaryIds' in createExpenseDto &&
+      createExpenseDto.intermediaryIds.length > 0
+    ) {
+      for (const i of createExpenseDto.intermediaryIds) {
+        const intermediaryId = createExpenseDto.intermediaryIds[i].id;
+        const intermediary = await this.userController.findOne({
+          intermediaryId,
+        })[0];
 
-        const newIntermediary = await this.userController.create(newUser);
-        createExpenseDto.intermediaryIds.push(newIntermediary[0].data.id);
+        if (intermediary == null) {
+          const newUser = {
+            name: createExpenseDto.name,
+            email: createExpenseDto.email,
+            password: createExpenseDto.password,
+            recipients: [],
+            slug: createExpenseDto.slug,
+            role: createExpenseDto.role,
+          };
+
+          const newIntermediary = await this.userController.create(newUser);
+          createExpenseDto.intermediaryIds.push(newIntermediary[0].data.id);
+        }
       }
     }
     const expense = await this.expenseService.create(createExpenseDto);
@@ -64,7 +67,7 @@ export class ExpenseController {
         message: 'Conta criada com sucesso',
         statusCode: HttpStatus.CREATED,
         data: {
-          name: expense[0].name,
+          name: expense[0].description,
           slug: expense[0].slug,
           price: expense[0].price,
           parcels: expense[0].parcels,
@@ -87,11 +90,16 @@ export class ExpenseController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto) {
+    this.expenseService.findExpense(id);
+    if (updateExpenseDto.intermediary) {
+      this.expenseService.verifierIntermediary(updateExpenseDto);
+    }
     return this.expenseService.update(id, updateExpenseDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
+    this.expenseService.findExpense(id);
     return this.expenseService.remove(id);
   }
 
