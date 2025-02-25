@@ -47,6 +47,16 @@ export class ExpenseController {
         })[0];
 
         if (intermediary == null) {
+          const newUserFields = ['name', 'email', 'password', 'slug', 'role'];
+          newUserFields.forEach((field) => {
+            if (!(field in createExpenseDto)) {
+              return {
+                message: `O campo ${field} é obrigatório`,
+                statusCode: HttpStatus.BAD_REQUEST,
+              };
+            }
+          });
+
           const newUser = {
             name: createExpenseDto.name,
             email: createExpenseDto.email,

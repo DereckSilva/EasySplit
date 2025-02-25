@@ -38,6 +38,14 @@ export class ErrorRemoveUser extends Error {
   }
 }
 
+export class ErrorUserFields extends Error {
+  FIELD: string;
+  constructor(field: string) {
+    super(`O campo ${field} é obrigatório para a criação do usuário`);
+    this.FIELD = field;
+  }
+}
+
 /**
  * Errors Expense
  */
