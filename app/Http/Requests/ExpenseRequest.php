@@ -30,12 +30,12 @@ class ExpenseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                     => ['required', 'alpha_num'],
+            'name'                     => ['required', 'alpha'],
             'price'                    => ['required', 'decimal:2,2', 'numeric'],
             'parcels'                  => ['required', 'integer'],
             'payee_id'                 => ['required', 'integer'],
-            'date_payment'             => ['required', 'date', 'after_or_equal:today'],
-            'intermediary'             => ['boolean', Rule::requiredIf(is_array($this->input('intermediarys_id')))],
+            'datePayment'              => ['required', 'date', 'after_or_equal:today'],
+            'intermediary'             => ['required', 'boolean'],
             'intermediarys_id'         => ['array', Rule::requiredIf($this->input('intermediary'))],
             'intermediarys_id.*.email' => ['required', 'email'],
         ];
@@ -47,9 +47,9 @@ class ExpenseRequest extends FormRequest
         'price.required'            => 'O campo preço é obrigatório.',
         'parcels.required'          => 'O campo parcelas é obrigatório.',
         'payee_id.required'         => 'O campo recebedor é obrigatório.',
-        'date_payment.required'     => 'A data de pagamento é obrigatória.',
+        'datePayment.required'      => 'A data de pagamento é obrigatória.',
+        'intermediary.required'     => 'O campo intermediary é obrigatório',
         'intermediarys_id.required' => 'A lista de intermediários deve ser informada quando o campo intermediary é true',
-        'intermediary.required'     => 'Necessário informar o campo intermediary quando declarado a lista de intermediários',
 
         'parcels.integer'        => 'O campo parcelas deve ser um número inteiro.',
         'payee_id.integer'       => 'O campo recebedor deve ser um número inteiro.',
@@ -58,13 +58,13 @@ class ExpenseRequest extends FormRequest
         'intermediarys_id.array'   => 'O campo intermediários deve ser uma lista (array).',
         'intermediarys_id.*.email' => 'E-mail inválido dentro da lista de intermediários',
         
-        'date_payment.date'           => 'A data de pagamento deve ser uma data válida.',
-        'date_payment.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje',
+        'datePayment.date'           => 'A data de pagamento deve ser uma data válida.',
+        'datePayment.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje',
         
         'price.decimal'          => 'O número mínimo e máximo é de 2 casas.',
         'price.numeric'          => 'O preço precisa ser um número',
 
-        'name.alpha_num' => 'O nome deve conter apenas letras e/ou números'
+        'name.alpha' => 'O nome deve conter apenas letras'
     ];
     }
 

@@ -77,8 +77,10 @@ class UserRepository {
 
   }
 
-  public function find(int $id): array {
-    return User::find($id)->toArray();
+  public function find(int|string $identifier, string $collumn = ''): array | User {
+    return !empty($collumn)
+      ? User::where($collumn, '=', $identifier)->first()
+      : User::find($identifier)->toArray();
   }
 
   public function findAll(): array {
