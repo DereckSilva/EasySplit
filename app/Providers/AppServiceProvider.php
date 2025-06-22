@@ -13,6 +13,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind('App\Repository\ExpenseRepository');
         $this->app->bind('App\Repository\LogRepository');
+        $this->app->bind('App\Repository\NotificationRepository');
         $this->app->bind('App\Repository\UserRepository');
     }
 

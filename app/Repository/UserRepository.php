@@ -78,9 +78,27 @@ class UserRepository {
   }
 
   public function find(int|string $identifier, string $collumn = ''): array | User {
-    return !empty($collumn)
-      ? User::where($collumn, '=', $identifier)->first()
-      : User::find($identifier)->toArray();
+    $user = !empty($collumn)
+      ? User::where($collumn, '=', $identifier)
+      : User::find($identifier);
+    
+    if (empty($user)) {
+      return [
+        'status'     => false,
+        'data'       => [],
+        'message'    => 'Nenhum usuário foi encontrado',
+        'statusCode' => 300
+      ];
+    }
+    $user = !empty($collumn) ? $user->first() : $user->toArray();
+    $notificationRepository  = app('App\Repository\NotificationRepository');
+    $user['notifications']   = $notificationRepository->findNotifications($identifier);
+    return [
+      'status'     => true,
+      'data'       => $user,
+      'message'    => 'Usuário encotrado com sucesso',
+      'statusCode' => 200
+    ];
   }
 
   public function findAll(): array {

@@ -66,4 +66,9 @@ class UserController extends Controller
             $user
         ], $user['statusCode']);
     }
+
+    public function show(int $id): JsonResponse {
+        $user = $this->userRepository->find($id);
+        return response()->json($user, $user['statusCode']);
+    }
 }
