@@ -91,6 +91,10 @@ class UserRepository {
       ];
     }
     $user = !empty($collumn) ? $user->first() : $user->toArray();
+    
+    if (!empty($collumn) && $user instanceof User) {
+      return $user;
+    }
     $notificationRepository  = app('App\Repository\NotificationRepository');
     $user['notifications']   = $notificationRepository->findNotifications($identifier);
     return [

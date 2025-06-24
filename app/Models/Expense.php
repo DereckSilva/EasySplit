@@ -17,13 +17,14 @@ class Expense extends Model
      */
     protected $fillable = [
         'name',
-        'price',
+        'priceTotal',
         'parcels',
         'datePayment',
         'intermediary',
         'payee_id',
         'intermediarys_id',
-        'maturity'
+        'maturity',
+        'receiveNotification'
     ];
 
     public function user(): BelongsTo {

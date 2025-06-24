@@ -29,15 +29,27 @@ class ExpenseRepository {
 
       // validar os intermediarys_id
       $intermediarios = [];
+      $people         = count($expense['intermediarys_id']) + 1;
       if (!empty($expense['intermediarys_id']) && is_array($expense['intermediarys_id'])) {
         $expense['intermediarys_id'] = collect($expense['intermediarys_id'])->each(function ($identifier) use ($userRepository) {
-          $teste = $userRepository->find($identifier['email'], 'email');
-          return !empty($teste);
+          $intermediary = $userRepository->find($identifier['email'], 'email')->email;
+          return !empty($intermediary);
+        })
+        // passa pelos intermediarios e acrescenta as informacoes de notificação e valor da conta
+        ->map(function ($identifier) use ($expense, $people) {
+          $identifier['totalAmount']  = (float)$expense['priceTotal'] / $people;
+          $identifier['notification'] = $expense['receiveNotification'];
+          return $identifier;
         })->toJson();
 
-        $intermediarios = collect($expense['intermediarys_id'])->map(function ($email, $key) {
-          $email = json_decode($email);
-          return $email[$key]->email;
+        // ajuste de intermediários que querem receber notificação
+        $intermediarios = collect($expense['intermediarys_id'])->filter(function ($data, $key) {
+          $dataInterm = json_decode($data);
+          return $dataInterm[$key]->notification;
+        })
+        ->map(function ($data, $key) {
+          $dataInterm = json_decode($data);
+          return $dataInterm[$key]->email;
         });
       }
       
@@ -50,7 +62,7 @@ class ExpenseRepository {
           $expense->notify(new ExpenseNotification($user, $expense));
         });
       }
-      
+
       $expense->save();
       DB::commit();
       return [

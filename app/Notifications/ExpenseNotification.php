@@ -45,7 +45,6 @@ class ExpenseNotification extends Notification
     {
 
         // faz a regra de dias para o expense
-
         return [
             'user_id' => $this->user->id,
             'message' => 'Conta criada pelo usuário ' . $this->user->name
