@@ -6,7 +6,6 @@ use App\Trait\Request;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Facades\Validator as FacadesValidator;
 use Illuminate\Validation\Rule;
 
 class ExpenseRequest extends FormRequest

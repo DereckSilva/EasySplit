@@ -23,6 +23,7 @@ Route::get('/login', [LoginController::class, 'auth']);
   Route::get('/expense/{id}', [ExpenseController::class, 'show']);
   Route::patch('/expense', [ExpenseController::class, 'update']);
   Route::delete('/expense/{id}', [ExpenseController::class, 'remove']);
+  Route::patch('/expense-notification', [ExpenseController::class, 'expenseNotification']);
   
   /* Notifications */
   Route::patch('/notification/{id}', [NotificationController::class, 'read']);

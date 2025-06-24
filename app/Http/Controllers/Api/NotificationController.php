@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Repository\NotificationRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class NotificationController
@@ -13,8 +14,9 @@ class NotificationController
         $this->notificationRepository = $notificationRepository;
     }
 
-    public function read(string $id) {
+    public function read(string $id): JsonResponse {
         $notification = $this->notificationRepository->readNotification($id);
         return response()->json($notification, $notification['statusCode']);
     }
+
 }

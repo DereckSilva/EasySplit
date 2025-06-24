@@ -82,15 +82,43 @@ class ExpenseRepository {
     }
   }
 
-  public function find(int $id): array {
-    return Expense::find($id)->toArray();
+  public function find(int $id): Expense|null {
+    $expense = Expense::find($id);
+    return !empty($expense) ? $expense->first() : null;
   }
 
   public function findAll(array $ids = []): array {
     return Expense::findMany(!empty($ids) ?? $ids)->toArray();
   }
 
-  public function remvoe(int $id): bool {
+  public function remove(int $id): bool {
     return Expense::destroy($id);
+  }
+
+  public function expenseNotification(array $expenseNot): array {
+    DB::beginTransaction();
+    try {
+
+      if (!empty($expenseNot['owner_expense'])) {
+        // atualiza recebimento de notificação da conta
+        $expense = $this->find($expenseNot['owner_expense']['expense']);
+        $expense->receiveNotification = $expenseNot['owner_expense']['notification'];
+        $expense->save();
+      }
+
+      if (isset($expenseNot['intermediary_expense']) && !empty($expenseNot['intermediary_expense'])) {
+        // regra
+      }
+
+      DB::commit();
+      return [];
+    } catch (PDOException $exception) {
+      DB::rollBack();
+      return [
+        'status'  => false,
+        'message' => 'Erro: ' . $exception->getMessage(),
+        'data'    => []
+      ];
+    }
   }
 }

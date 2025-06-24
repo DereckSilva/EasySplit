@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\ExpenseNotificationRequest;
 use App\Http\Requests\ExpenseRequest;
 use App\Repository\ExpenseRepository;
 use Carbon\Carbon;
@@ -39,7 +40,14 @@ class ExpenseController extends Controller
     }
 
     public function show(int $id): JsonResponse {
+        // revisar
         $expense = $this->expenseRepository->find($id);
+        return response()->json(!empty($expense) ? $expense->toArray() : [], 200);
+    }
+
+    public function expenseNotification(ExpenseNotificationRequest $expenseRequest): JsonResponse {
+        $expenseNot = $expenseRequest->all();
+        $expense = $this->expenseRepository->expenseNotification($expenseNot);
         return response()->json($expense, 200);
     }
 }
