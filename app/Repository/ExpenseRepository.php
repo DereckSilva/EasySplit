@@ -84,7 +84,7 @@ class ExpenseRepository {
 
   public function find(int $id): Expense|null {
     $expense = Expense::find($id);
-    return !empty($expense) ? $expense->first() : null;
+    return !empty($expense) ? $expense : null;
   }
 
   public function findAll(array $ids = []): array {
@@ -99,7 +99,7 @@ class ExpenseRepository {
     DB::beginTransaction();
     try {
 
-      if (!empty($expenseNot['owner_expense'])) {
+      if (isset($expenseNot['owner_expense']) && !empty($expenseNot['owner_expense'])) {
         // atualiza recebimento de notificação da conta
         $expense = $this->find($expenseNot['owner_expense']['expense']);
         $expense->receiveNotification = $expenseNot['owner_expense']['notification'];
@@ -107,11 +107,53 @@ class ExpenseRepository {
       }
 
       if (isset($expenseNot['intermediary_expense']) && !empty($expenseNot['intermediary_expense'])) {
-        // regra
+        
+        $errors = array();
+        collect($expenseNot['intermediary_expense']['expenses'])->each(function ($expense) use ($expenseNot, &$errors) {
+          $exp = $this->find($expense['id']);
+          
+          if (empty($exp)) {
+            return $errors =  [
+              'status'  => false,
+              'message' => 'Despesa não encontrada',
+              'data'    => []
+            ];
+          }
+          
+          $intermediarys  = json_decode($exp->intermediarys_id, true);
+          $notFoundInterm = collect($intermediarys)->filter(function ($intermediary) use ($expenseNot) {
+            return $intermediary['email'] == $expenseNot['intermediary_expense']['email'];
+          })->toArray();
+
+          if (empty($notFoundInterm)) {
+            return $errors = [
+              'status'  => false,
+              'message' => 'Intermediário não encontrado',
+              'data'    => []
+            ];
+          }
+
+          $intermediarys = collect($intermediarys)->map(function ($intermediary) use ($expense, $expenseNot) {
+            if (isset($intermediary['notification']) && $intermediary['email'] == $expenseNot['intermediary_expense']['email']) {
+              $intermediary['notification'] = $expense['notification'];
+            }
+            return $intermediary;
+          })->toJson();
+          $exp->intermediarys_id = $intermediarys;
+          $exp->save();
+        });
+      }
+
+      if (!empty($errors)) {
+        return $errors;
       }
 
       DB::commit();
-      return [];
+      return [
+        'status'  => true,
+        'message' => 'Notificação atualizada com sucesso',
+        'data'    => []
+      ];
     } catch (PDOException $exception) {
       DB::rollBack();
       return [
