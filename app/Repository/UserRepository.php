@@ -3,14 +3,18 @@
 namespace App\Repository;
 
 use App\Models\User;
+use App\Trait\Request;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
 class UserRepository {
 
+  use Request;
+
   protected $model = 'User';
 
-  public function create(array $user): array {
+  public function create(array $user): array | HttpResponseException {
 
     DB::beginTransaction();
     try {
@@ -19,11 +23,7 @@ class UserRepository {
         ->toArray();
   
       if (!empty($userFound)) {
-        return [
-          'status'     => false,
-          'message'    => 'O e-mail informado já está cadastrado',
-          'statusCode' => 422
-        ];
+        return $this->retornoExceptionErroRequest(false, 'O e-mail informado já está cadastrado.', 422, []);
       }
 
       $user['password'] = bcrypt($user['password']);
@@ -39,16 +39,11 @@ class UserRepository {
       ];
     } catch (PDOException $exception) {
       DB::rollBack();
-
-      return [
-        'status'     => false,
-        'message'    => 'Houve um erro ao criar o usuário ' . $exception->getMessage(),
-        'statusCode' => 400
-      ];
+      return $this->retornoExceptionErroRequest(false, 'Houve um erro ao criar o usuário: ' . $exception->getMessage(), 400, []);
     }
   }
 
-  public function updatePassword(array $userPassword): array {
+  public function updatePassword(array $userPassword): array | HttpResponseException {
 
     DB::beginTransaction();
 
@@ -68,29 +63,20 @@ class UserRepository {
       ];
     } catch (PDOException $exception) {
       DB::rollBack();
-      return [
-        'status'     => false,
-        'message'    => 'Houve um erro ao atualizar a senha do usuário ' . $exception->getMessage(),
-        'statusCode' => 400
-      ];
+      return $this->retornoExceptionErroRequest(false, 'Houve um erro ao atualizar a senha do usuário: ' . $exception->getMessage(), 400, []);
     }
 
   }
 
-  public function find(int|string $identifier, string $collumn = ''): array | User {
+  public function find(int|string $identifier, string $collumn = ''): array | User | HttpResponseException {
     $user = !empty($collumn)
-      ? User::where($collumn, '=', $identifier)
+      ? User::where($collumn, '=', $identifier)->first()
       : User::find($identifier);
     
     if (empty($user)) {
-      return [
-        'status'     => false,
-        'data'       => [],
-        'message'    => 'Nenhum usuário foi encontrado',
-        'statusCode' => 300
-      ];
+      return $this->retornoExceptionErroRequest(false, 'O proprietário da conta ou o intermediário não foi encontrado.', 300, []);
     }
-    $user = !empty($collumn) ? $user->first() : $user->toArray();
+    $user = !empty($collumn) ? $user : $user->toArray();
     
     if (!empty($collumn) && $user instanceof User) {
       return $user;

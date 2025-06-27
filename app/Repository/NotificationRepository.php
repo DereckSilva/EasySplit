@@ -3,16 +3,20 @@
 namespace App\Repository;
 
 use App\Models\Notification;
+use App\Trait\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
 class NotificationRepository {
 
+  use Request;
+
   protected $model = 'notifications';
 
-  public function readNotification (string $id): array  {
+  public function readNotification (string $id): array | HttpResponseException  {
     DB::beginTransaction();
     try {
 
@@ -31,12 +35,7 @@ class NotificationRepository {
       ];
     } catch (PDOException $exception) {
       DB::rollBack();
-      return [
-        'status'     => false,
-        'data'       => [],
-        'message'    => $exception->getMessage(),
-        'statusCode' => 400
-      ];
+      return $this->retornoExceptionErroRequest(false, $exception->getMessage(), 400, []);
     }
   }
 

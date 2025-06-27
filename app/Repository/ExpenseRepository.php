@@ -3,16 +3,21 @@
 namespace App\Repository;
 
 use App\Models\Expense;
+use App\Models\User;
 use App\Notifications\ExpenseNotification;
+use App\Trait\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
 class ExpenseRepository {
 
+  use Request;
+
   protected $model = 'Expenses';
 
-  public function create(array $expense): array {
+  public function create(array $expense): array | HttpResponseException {
     DB::beginTransaction();
     try {
       $userRepository = app('App\Repository\UserRepository');
@@ -27,29 +32,37 @@ class ExpenseRepository {
       $currentDate->setMonth($month + $expense['parcels']);
       $expense['maturity'] = $currentDate->format('Y-m-d');
 
-      // validar os intermediarys_id
+      // validar o payee_id
+      $payee = $userRepository->find($expense['payee_id']);
+      if (isset($payee['status']) && !$payee['status']) {
+        return $payee;
+      }
+
+      // validar os intermediarys
       $intermediarios = [];
-      $people         = count($expense['intermediarys_id']) + 1;
-      if (!empty($expense['intermediarys_id']) && is_array($expense['intermediarys_id'])) {
-        $expense['intermediarys_id'] = collect($expense['intermediarys_id'])->each(function ($identifier) use ($userRepository) {
-          $intermediary = $userRepository->find($identifier['email'], 'email')->email;
+      if (!empty($expense['intermediarys']) && is_array($expense['intermediarys'])) {
+        $expense['intermediarys'] = collect($expense['intermediarys'])->filter(function ($identifier) use ($userRepository) {
+          $user = $userRepository->find($identifier['email'], 'email');
+          $intermediary = $user instanceof User ? $intermediary = $user->email : [];
           return !empty($intermediary);
-        })
+        })->toArray();
+
+        sort($expense['intermediarys']);
+
         // passa pelos intermediarios e acrescenta as informacoes de notificação e valor da conta
-        ->map(function ($identifier) use ($expense, $people) {
-          $identifier['totalAmount']  = (float)$expense['priceTotal'] / $people;
-          $identifier['notification'] = $expense['receiveNotification'];
-          return $identifier;
+        $expense['intermediarys'] = collect($expense['intermediarys'])->map(function ($identifier) use ($expense) {
+          $people = count($expense['intermediarys']) + 1;
+          return ['email' => $identifier['email'], 'totalAmount' => (float)$expense['priceTotal'] / $people, 'notification' => $expense['receiveNotification']];
         })->toJson();
 
         // ajuste de intermediários que querem receber notificação
-        $intermediarios = collect($expense['intermediarys_id'])->filter(function ($data, $key) {
-          $dataInterm = json_decode($data);
-          return $dataInterm[$key]->notification;
+        $intermediarios = collect($expense['intermediarys'])->filter(function ($data, $key) {
+          $dataInterm = json_decode($data, true);
+          return !empty($dataInterm) && isset($dataInterm[$key]) ? $dataInterm[$key]['notification'] : [];
         })
         ->map(function ($data, $key) {
-          $dataInterm = json_decode($data);
-          return $dataInterm[$key]->email;
+          $dataInterm = json_decode($data, true);
+          return !empty($dataInterm) && isset($dataInterm[$key]) ? $dataInterm[$key]['email'] : [];
         });
       }
       
@@ -59,7 +72,7 @@ class ExpenseRepository {
       if (!empty($intermediarios)) {
         collect($intermediarios)->each(function ($id) use ($userRepository, $expense) {
           $user = $userRepository->find($id, 'email');
-          $expense->notify(new ExpenseNotification($user, $expense));
+            $expense->notify(new ExpenseNotification($user, $expense));
         });
       }
 
@@ -73,12 +86,7 @@ class ExpenseRepository {
       ];
     } catch (PDOException $exception) {
       DB::rollBack();
-      return [
-        'status'     => false,
-        'data'       => [],
-        'message'    => $exception->getMessage(),
-        'statusCode' => 500
-      ];
+      return $this->retornoExceptionErroRequest(false, $exception->getMessage(), 400, []);
     }
   }
 
@@ -95,7 +103,7 @@ class ExpenseRepository {
     return Expense::destroy($id);
   }
 
-  public function expenseNotification(array $expenseNot): array {
+  public function expenseNotification(array $expenseNot): array | HttpResponseException {
     DB::beginTransaction();
     try {
 
@@ -112,25 +120,18 @@ class ExpenseRepository {
         collect($expenseNot['intermediary_expense']['expenses'])->each(function ($expense) use ($expenseNot, &$errors) {
           $exp = $this->find($expense['id']);
           
-          if (empty($exp)) {
-            return $errors =  [
-              'status'  => false,
-              'message' => 'Despesa não encontrada',
-              'data'    => []
-            ];
+          if (empty($exp) || !$exp->intermediary) {
+            $message = empty($exp) ? 'Despesa não encontrada.' : "A despesa {$exp->id} não possui intermediários.";
+            return $this->retornoExceptionErroRequest(false, $message, 400, []);
           }
-          
-          $intermediarys  = json_decode($exp->intermediarys_id, true);
+
+          $intermediarys  = json_decode($exp->intermediarys, true);
           $notFoundInterm = collect($intermediarys)->filter(function ($intermediary) use ($expenseNot) {
             return $intermediary['email'] == $expenseNot['intermediary_expense']['email'];
           })->toArray();
 
           if (empty($notFoundInterm)) {
-            return $errors = [
-              'status'  => false,
-              'message' => 'Intermediário não encontrado',
-              'data'    => []
-            ];
+            return $this->retornoExceptionErroRequest(false, 'Intermediário não encontrado.', 400, []);
           }
 
           $intermediarys = collect($intermediarys)->map(function ($intermediary) use ($expense, $expenseNot) {
@@ -139,7 +140,7 @@ class ExpenseRepository {
             }
             return $intermediary;
           })->toJson();
-          $exp->intermediarys_id = $intermediarys;
+          $exp->intermediarys = $intermediarys;
           $exp->save();
         });
       }
@@ -156,11 +157,7 @@ class ExpenseRepository {
       ];
     } catch (PDOException $exception) {
       DB::rollBack();
-      return [
-        'status'  => false,
-        'message' => 'Erro: ' . $exception->getMessage(),
-        'data'    => []
-      ];
+      return $this->retornoExceptionErroRequest(false, 'Erro: ' . $exception->getMessage(), 400, []);
     }
   }
 }

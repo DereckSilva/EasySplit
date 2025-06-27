@@ -22,7 +22,7 @@ class Expense extends Model
         'datePayment',
         'intermediary',
         'payee_id',
-        'intermediarys_id',
+        'intermediarys',
         'maturity',
         'receiveNotification'
     ];

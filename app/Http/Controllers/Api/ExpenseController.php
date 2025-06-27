@@ -31,8 +31,8 @@ class ExpenseController extends Controller
         }
 
         // verifica campo de intermediarios
-        if (!isset($expense['intermediarys_id'])) {
-            $expense['intermediarys_id'] = json_encode([]);
+        if (!isset($expense['intermediarys'])) {
+            $expense['intermediarys'] = json_encode([]);
         }
         
         $expense = $this->expenseRepository->create($expense);
