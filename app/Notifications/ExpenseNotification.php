@@ -17,13 +17,16 @@ class ExpenseNotification extends Notification
 
     protected $expense;
 
+    protected $message;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, Expense $expense)
+    public function __construct(User $user, Expense $expense, string $message)
     {
         $this->user    = $user;
         $this->expense = $expense;
+        $this->message = $message;
     }
 
     /**
@@ -47,7 +50,7 @@ class ExpenseNotification extends Notification
         // faz a regra de dias para o expense
         return [
             'user_id' => $this->user->id,
-            'message' => 'Conta criada pelo usuário ' . $this->user->name
+            'message' => "{$this->message} {$this->user->name}"
         ];
     }
 }

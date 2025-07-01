@@ -72,7 +72,7 @@ class ExpenseRepository {
       if (!empty($intermediarios)) {
         collect($intermediarios)->each(function ($id) use ($userRepository, $expense) {
           $user = $userRepository->find($id, 'email');
-            $expense->notify(new ExpenseNotification($user, $expense));
+            $expense->notify(new ExpenseNotification($user, $expense, 'Conta criada pelo usuário: '));
         });
       }
 
@@ -90,6 +90,30 @@ class ExpenseRepository {
     }
   }
 
+  public function update(array $expense): array | HttpResponseException {
+    DB::beginTransaction();
+    try {
+
+      $expenseUp = $this->find($expense['id']);
+
+      if (empty($expenseUp)) {
+        $this->retornoExceptionErroRequest(false, 'Conta não cadastrada.', 400, []);
+      }
+
+      $expenseUp->update($expense);
+
+      DB::commit();
+      return [
+        'status'  => true,
+        'message' => 'Conta atualizada com sucesso.',
+        'data'    => [],
+      ];
+    } catch (PDOException $exception) {
+      DB::rollback();
+      return $this->retornoExceptionErroRequest(false, 'Erro ao atualizar a conta', 400, []);
+    }
+  }
+
   public function find(int $id): Expense|null {
     $expense = Expense::find($id);
     return !empty($expense) ? $expense : null;
@@ -99,7 +123,13 @@ class ExpenseRepository {
     return Expense::findMany(!empty($ids) ?? $ids)->toArray();
   }
 
-  public function remove(int $id): bool {
+  public function remove(int $id): bool | HttpResponseException {
+    $expense = $this->find($id);
+
+    if (empty($expense)) {
+      return $this->retornoExceptionErroRequest(false, 'Conta não cadastrada.', 400, []);
+    }
+
     return Expense::destroy($id);
   }
 

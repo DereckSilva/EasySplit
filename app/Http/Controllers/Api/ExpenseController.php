@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Requests\ExpenseNotificationRequest;
 use App\Http\Requests\ExpenseRequest;
+use App\Http\Requests\ExpenseRequestUpdate;
 use App\Repository\ExpenseRepository;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -49,5 +50,20 @@ class ExpenseController extends Controller
         $expenseNot = $expenseRequest->all();
         $expense = $this->expenseRepository->expenseNotification($expenseNot);
         return response()->json($expense, 200);
+    }
+
+    public function update(ExpenseRequestUpdate $expenseRequestUpdate): JsonResponse {
+        $expense = $expenseRequestUpdate->all();
+        $expense = $this->expenseRepository->update($expense);
+        return response()->json($expense, 200);
+    }
+
+    public function remove (int $id): JsonResponse {
+        $this->expenseRepository->remove($id);
+        return response()->json([
+            'status'  => true,
+            'message' => 'Conta excluída com sucesso',
+            'data'    => []
+        ], 200);
     }
 }
