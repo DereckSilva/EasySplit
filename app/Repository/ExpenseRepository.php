@@ -119,8 +119,12 @@ class ExpenseRepository {
     return !empty($expense) ? $expense : null;
   }
 
-  public function findAll(array $ids = []): array {
-    return Expense::findMany(!empty($ids) ?? $ids)->toArray();
+  public function findAll(): array {
+    return Expense::all()->toArray();
+  }
+
+  public function findMany(array $ids = []): array {
+    return Expense::findMany($ids)->toArray();
   }
 
   public function remove(int $id): bool | HttpResponseException {
