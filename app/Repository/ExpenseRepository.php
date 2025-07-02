@@ -52,7 +52,7 @@ class ExpenseRepository {
         // passa pelos intermediarios e acrescenta as informacoes de notificação e valor da conta
         $expense['intermediarys'] = collect($expense['intermediarys'])->map(function ($identifier) use ($expense) {
           $people = count($expense['intermediarys']) + 1;
-          return ['email' => $identifier['email'], 'totalAmount' => (float)$expense['priceTotal'] / $people, 'notification' => $expense['receiveNotification']];
+          return ['email' => $identifier['email'], 'totalAmount' => (float)$expense['priceTotal'] / $people, 'notification' => $expense['receiveNotification'], 'paid' => false];
         })->toJson();
 
         // ajuste de intermediários que querem receber notificação

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Expense;
+use App\Models\User;
 use App\Notifications\ExpenseNotification;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -38,13 +40,31 @@ class VerificaVencimentoContas extends Command
 
             $exp  = $expenseRepository->find($expense['id']);
             $user = $exp->user()->first();
-            if ($diff == 0) {
-                $exp->notify(new ExpenseNotification($user, $exp, 'Chegou o dia do vencimento da conta do'));
-            } elseif ($diff <= 5) {
-                $exp->notify(new ExpenseNotification($user, $exp, 'Faltam 5 dias para o vencimento da conta do'));
-            } elseif ($diff > 5 && $diff <= 10) {
-                $exp->notify(new ExpenseNotification($user, $exp, 'Faltam 10 dias para o vencimento da conta do'));
+            
+            // realiza o envio da notificacao para o dono da conta - (contas não pagas)
+            if (!$exp->paid) {
+                $this->sendNotification($user, $exp, $diff);
             }
+
+            $userRepository = app('App\Repository\UserRepository');
+            $intermediarys  = json_decode($exp->intermediarys, true);
+            collect($intermediarys)->each(function ($intermediary) use ($userRepository, $exp, $diff){
+                // percorre os intermediários da conta - (envia notificação para quem ainda não pagou)
+                if (!$intermediary['paid']) {
+                    $user = $userRepository->find($intermediary['email'], 'email');
+                    $this->sendNotification($user, $exp, $diff);
+                }
+            });
         });
+    }
+
+    private function sendNotification(User $user, Expense $expense, int $diff) {
+        if ($diff == 0) {
+            $expense->notify(new ExpenseNotification($user, $expense, 'Chegou o dia do vencimento da conta do'));
+        } elseif ($diff <= 5) {
+            $expense->notify(new ExpenseNotification($user, $expense, 'Faltam 5 dias para o vencimento da conta do'));
+        } elseif ($diff > 5 && $diff <= 10) {
+            $expense->notify(new ExpenseNotification($user, $expense, 'Faltam 10 dias para o vencimento da conta do'));
+        }
     }
 }
