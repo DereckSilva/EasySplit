@@ -30,7 +30,7 @@ class UserRequest extends FormRequest
     {
         return [
             'name'      => ['required', 'min:5'],
-            'email'     => ['required', 'email'],
+            'email'     => ['required', 'email', 'unique:users,email'],
             'password'  => ['required', Password::min(8)->max(12)->letters()->numbers()->symbols(), 'confirmed' ],
             'birthdate' => ['required', 'date'],
         ];
@@ -42,6 +42,8 @@ class UserRequest extends FormRequest
             'email.required'      => 'O email é obrigatório',
             'password.required'   => 'A senha é obrigatória',
             'birthdate.required' => 'A data de nascimento é obrigatória',
+
+            'email.unique' => 'O e-mail informado já foi cadastrado.',
 
             'name.min'     => 'O nome precisa ter no mínimo 5 caracteres',
             'password.min' => 'A senha precisa ter no mínimo 8 caracteres',

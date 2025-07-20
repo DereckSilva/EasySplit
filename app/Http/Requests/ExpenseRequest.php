@@ -32,7 +32,7 @@ class ExpenseRequest extends FormRequest
             'name'                     => ['required', 'alpha'],
             'priceTotal'               => ['required', 'decimal:0,2', 'numeric'],
             'parcels'                  => ['required', 'integer'],
-            'payee_id'                 => ['required', 'integer'],
+            'payee_id'                 => ['required', 'integer', 'exists:users,id'],
             'datePayment'              => ['required', 'date', 'after_or_equal:today'],
             'intermediary'             => ['required', 'boolean', function ($attribute, $value, $fail) {
                 if (!$value && $this->input('intermediarys')) {
@@ -40,7 +40,7 @@ class ExpenseRequest extends FormRequest
                 }
             }],
             'intermediarys'            => ['array', Rule::requiredIf($this->input('intermediary'))],
-            'intermediarys.*.email'    => ['required', 'email'],
+            'intermediarys.*.email'    => ['required', 'email', 'exists:users,email'],
             'receiveNotification'      => ['required', 'boolean'],
         ];
     }
@@ -58,11 +58,13 @@ class ExpenseRequest extends FormRequest
 
         'parcels.integer'             => 'O campo parcelas deve ser um número inteiro.',
         'payee_id.integer'            => 'O campo recebedor deve ser um número inteiro.',
+        'payee_id.exists'            => 'O receber informado não está cadastrado',
         'intermediary.boolean'        => 'O campo intermediário deve ser verdadeiro ou falso.',
         'receiveNotification.boolean' => 'O campo notification deve ser verdadeiro ou falso.',
         
         'intermediarys.array'   => 'O campo intermediários deve ser uma lista (array).',
         'intermediarys.*.email' => 'E-mail inválido dentro da lista de intermediários.',
+        'intermediarys.*.email.exists' => 'O e-mail do intermediário não foi cadastrado.',
         
         'datePayment.date'           => 'A data de pagamento deve ser uma data válida.',
         'datePayment.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje.',

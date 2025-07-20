@@ -6,17 +6,13 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->group(function () {
-});
-
-
 /* Register */
 Route::post('/register', [UserController::class, 'create']);
   
 /* Login */
 Route::get('/login', [LoginController::class, 'auth']);
 
-//Route::middleware('auth_token')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
   /* Expense */
   Route::post('/expenses', [ExpenseController::class, 'create']);
   Route::get('/expenses', [ExpenseController::class, 'index']);
@@ -33,5 +29,4 @@ Route::get('/login', [LoginController::class, 'auth']);
   
   /* User */
   Route::get('/user/{id}', [UserController::class, 'show']);
-
-//});
+});

@@ -18,14 +18,6 @@ class UserRepository {
 
     DB::beginTransaction();
     try {
-      $userFound = User::where('email', '=', $user['email'])
-        ->get()
-        ->toArray();
-  
-      if (!empty($userFound)) {
-        return $this->retornoExceptionErroRequest(false, 'O e-mail informado já está cadastrado.', 422, []);
-      }
-
       $user['password'] = bcrypt($user['password']);
       $user = User::create($user);
       $user->save();
@@ -72,10 +64,6 @@ class UserRepository {
     $user = !empty($collumn)
       ? User::where($collumn, '=', $identifier)->first()
       : User::find($identifier);
-    
-    if (empty($user)) {
-      return $this->retornoExceptionErroRequest(false, 'O proprietário da conta ou o intermediário não foi encontrado.', 300, []);
-    }
     $user = !empty($collumn) ? $user : $user->toArray();
     
     if (!empty($collumn) && $user instanceof User) {

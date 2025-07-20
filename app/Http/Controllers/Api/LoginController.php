@@ -17,16 +17,15 @@ class LoginController extends Controller
 
         // verifica se está autenticado dentro do sistema
         if (!in_array($request->url(), [url('/api/register/new-password')])) {
-            $user = Auth::check();
-            if (empty($user)) {
-                $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 401, []);
+            if (!Auth::attempt($request->only('email', 'password'))) {
+                $this->retornoExceptionErroRequest(false, 'Usuário não autorizadosss', 403, []);
             }
         } else {
             $user             = $request->only('email', 'current_password');
             $user['password'] = $user['current_password'];
             unset($user['current_password']);
             if (!Auth::attempt($user)) {
-                $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 401, []);
+                $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 403, []);
             }
         }
         $token = $request->user()->createToken('Token Usuario')->plainTextToken;

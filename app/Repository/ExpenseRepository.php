@@ -32,12 +32,6 @@ class ExpenseRepository {
       $currentDate->setMonth($month + $expense['parcels']);
       $expense['maturity'] = $currentDate->format('Y-m-d');
 
-      // validar o payee_id
-      $payee = $userRepository->find($expense['payee_id']);
-      if (isset($payee['status']) && !$payee['status']) {
-        return $payee;
-      }
-
       // validar os intermediarys
       $intermediarios = [];
       if (!empty($expense['intermediarys']) && is_array($expense['intermediarys'])) {
@@ -114,9 +108,12 @@ class ExpenseRepository {
     }
   }
 
-  public function find(int $id): Expense|null {
+  public function find(int $id): Expense| HttpResponseException {
     $expense = Expense::find($id);
-    return !empty($expense) ? $expense : null;
+    if(empty($expense)) {
+      return $this->retornoExceptionErroRequest(false, 'Conta não cadastrada.', 400, []);
+    }
+    return $expense;
   }
 
   public function findAll(): array {
