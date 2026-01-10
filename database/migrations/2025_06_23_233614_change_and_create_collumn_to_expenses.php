@@ -13,13 +13,13 @@ return new class extends Migration
     {
         if (Schema::hasColumn('expenses', 'price')) {
             Schema::table('expenses', function (Blueprint $table) {
-                $table->renameColumn('price', 'priceTotal');
+                $table->renameColumn('price', 'price_total');
             });
         }
 
-        if (!Schema::hasColumn('expenses', 'receiveNotification')) {
+        if (!Schema::hasColumn('expenses', 'receive_notification')) {
             Schema::table('expenses', function (Blueprint $table) {
-                $table->boolean('receiveNotification')->default(true);
+                $table->boolean('receive_notification')->default(true);
             });
         }
     }
@@ -29,15 +29,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasColumn('expenses', 'priceTotal')) {
+        if (Schema::hasColumn('expenses', 'price_total')) {
             Schema::table('expenses', function (Blueprint $table) {
-                $table->renameColumn('priceTotal', 'price');
+                $table->renameColumn('price_total', 'price');
             });
         }
 
-        if (Schema::hasColumn('expenses', 'receiveNotification')) {
+        if (Schema::hasColumn('expenses', 'receive_notification')) {
             Schema::table('expenses', function (Blueprint $table) {
-                $table->dropColumn('receiveNotification');
+                $table->dropColumn('receive_notification');
             });
         }
     }

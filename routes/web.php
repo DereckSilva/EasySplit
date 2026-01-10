@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Route;
 /* Login */
 Route::get('/login', [LoginController::class, 'logout']);
 
+/* Status */
+Route::get('/status', function (){
+  return response()->json(['message' => 'api funcionando corretamente']);
+});
+
 /* Register */
 Route::get('/register', function () {
     return view('register-user');

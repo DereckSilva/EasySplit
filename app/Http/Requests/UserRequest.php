@@ -29,10 +29,11 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'      => ['required', 'min:5'],
-            'email'     => ['required', 'email', 'unique:users,email'],
-            'password'  => ['required', Password::min(8)->max(12)->letters()->numbers()->symbols(), 'confirmed' ],
-            'birthdate' => ['required', 'date'],
+            'name'         => ['required', 'min:5'],
+            'email'        => ['required', 'email', 'unique:users,email'],
+            'password'     => ['required', Password::min(8)->max(12)->letters()->numbers()->symbols(), 'confirmed' ],
+            'phone_number' => ['required', 'unique:users,phone_number', 'numeric', 'min:11', 'max: 14'],
+            'birthdate'    => ['required', 'date'],
         ];
     }
 
@@ -42,16 +43,22 @@ class UserRequest extends FormRequest
             'email.required'      => 'O email é obrigatório',
             'password.required'   => 'A senha é obrigatória',
             'birthdate.required' => 'A data de nascimento é obrigatória',
+            'phone_number.required' => 'O telefone é obrigatório',
 
             'email.unique' => 'O e-mail informado já foi cadastrado.',
+            'phone_number.unique' => 'O telefone informado já foi cadastrado.',
 
             'name.min'     => 'O nome precisa ter no mínimo 5 caracteres',
             'password.min' => 'A senha precisa ter no mínimo 8 caracteres',
+            'phone_number.min' => 'O telefone precisa ter no mínimo 11 caracteres',
+            'phone_number.numeric' => 'O telefone precisa ter apenas números',
 
             'password.max'     => 'A senha pode ter no máximo 12 caracteres',
-            'password.letters' => 'A senha precisa ter no mínimo uma letra',
-            'password.numbers' => 'A senha precisa ter no mínimo um número',
-            'password.symbols' => 'A senha precisa ter no mínimo um símbolo',
+            'phone_number.max' => 'O telefone precisa ter no máximo 14 caracteres',
+            
+            'password.letters'   => 'A senha precisa ter no mínimo uma letra',
+            'password.numbers'   => 'A senha precisa ter no mínimo um número',
+            'password.symbols'   => 'A senha precisa ter no mínimo um símbolo',
             'password.confirmed' => 'A confirmação da senha não confere',
 
             'birthdate.date' => 'A data de nascimento é inválida ',

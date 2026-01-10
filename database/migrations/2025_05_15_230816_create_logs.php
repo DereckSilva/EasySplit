@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('logs', function (Blueprint $table) {
-            $table->id();
-            $table->string('description');
+            $table->id()->primary()->comment('Id do log');
+            $table->string('description')->comment('Descrição do log');
             $table->timestamps();
             
-            $table->foreignId('user_id')->references('id')->on('users');
+            $table->foreignId('user_id')->references('id')->on('users')->comment('Id do usuário');
         });
     }
 

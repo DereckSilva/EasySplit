@@ -13,7 +13,7 @@ return new class extends Migration
     {
         if (!Schema::hasColumn('expenses', 'paid')) {
             Schema::table('expenses', function (Blueprint $table) {
-                $table->boolean('paid')->default(false);
+                $table->boolean('paid')->default(false)->comment('Se a despesa foi paga');
             });
         }
     }

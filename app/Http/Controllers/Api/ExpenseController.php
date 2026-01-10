@@ -8,6 +8,7 @@ use App\Http\Requests\ExpenseRequestUpdate;
 use App\Repository\ExpenseRepository;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class ExpenseController extends Controller
 {
@@ -22,9 +23,9 @@ class ExpenseController extends Controller
         $expense = $expenseRequest->all();
 
         //valida data de pagamento
-        $datePayment = $expense['datePayment'];
+        $payment_date = $expense['payment_date'];
         $currentDate = Carbon::now();
-        if (strtotime($currentDate) > $datePayment) {
+        if (strtotime($currentDate) > $payment_date) {
             return response()->json([
                 'status' => false,
                 'message' => 'Data de pagamento precisa ser igual ou maior que a data atual',
@@ -43,6 +44,9 @@ class ExpenseController extends Controller
     public function show(int $id): JsonResponse {
         // revisar
         $expense = $this->expenseRepository->find($id);
+
+        Gate::authorize('view', $expense);
+
         return response()->json(!empty($expense) ? $expense->toArray() : [], 200);
     }
 
@@ -53,12 +57,21 @@ class ExpenseController extends Controller
     }
 
     public function update(ExpenseRequestUpdate $expenseRequestUpdate): JsonResponse {
+
         $expense = $expenseRequestUpdate->all();
+        
+        Gate::authorize('update', $expense);
+
         $expense = $this->expenseRepository->update($expense);
         return response()->json($expense, 200);
     }
 
     public function remove (int $id): JsonResponse {
+
+        $expense = $this->expenseRepository->find($id);
+
+        Gate::authorize('delete', $expense);
+        
         $this->expenseRepository->remove($id);
         return response()->json([
             'status'  => true,

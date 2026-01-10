@@ -71,4 +71,8 @@ class UserController extends Controller
         $user = $this->userRepository->find($id);
         return response()->json($user, $user['statusCode']);
     }
+
+    public function updatePhoneNumber(): JsonResponse {
+        return response()->json();
+    }
 }

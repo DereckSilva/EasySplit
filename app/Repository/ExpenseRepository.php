@@ -24,11 +24,11 @@ class ExpenseRepository {
 
       // validar vencimento da conta
       $currentDate = Carbon::now();
-      $datePayment = Carbon::create($expense['datePayment']);
+      $payment_date = Carbon::create($expense['payment_date']);
       $month       = $currentDate->month;
 
       // seta data para o vencimento da conta
-      $currentDate->setDay($datePayment->day);
+      $currentDate->setDay($payment_date->day);
       $currentDate->setMonth($month + $expense['parcels']);
       $expense['maturity'] = $currentDate->format('Y-m-d');
 
@@ -46,7 +46,7 @@ class ExpenseRepository {
         // passa pelos intermediarios e acrescenta as informacoes de notificação e valor da conta
         $expense['intermediarys'] = collect($expense['intermediarys'])->map(function ($identifier) use ($expense) {
           $people = count($expense['intermediarys']) + 1;
-          return ['email' => $identifier['email'], 'totalAmount' => (float)$expense['priceTotal'] / $people, 'notification' => $expense['receiveNotification'], 'paid' => false];
+          return ['email' => $identifier['email'], 'totalAmount' => (float)$expense['price_total'] / $people, 'notification' => $expense['receive_notification'], 'paid' => false];
         })->toJson();
 
         // ajuste de intermediários que querem receber notificação
@@ -141,7 +141,7 @@ class ExpenseRepository {
       if (isset($expenseNot['owner_expense']) && !empty($expenseNot['owner_expense'])) {
         // atualiza recebimento de notificação da conta
         $expense = $this->find($expenseNot['owner_expense']['expense']);
-        $expense->receiveNotification = $expenseNot['owner_expense']['notification'];
+        $expense->receive_notification = $expenseNot['owner_expense']['notification'];
         $expense->save();
       }
 

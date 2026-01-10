@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('expenses', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->float('price');
-            $table->integer('parcels')->default(1);
-            $table->dateTime('datePayment');
-            $table->boolean('intermediary')->default(false);
-            $table->date('maturity');
+            $table->id()->primary()->comment('Id da despesa');
+            $table->string('description')->comment('Descrição da despesa');
+            $table->float('price')->comment('Preço da despesa');
+            $table->integer('parcels')->default(1)->comment('Número de parcelas');
+            $table->dateTime('payment_date')->comment('Data de pagamento');
+            $table->boolean('intermediary')->default(false)->comment('Se a despesa possui intermediáros');
+            $table->date('maturity')->comment('Data de vencimento');
             $table->timestamps();
             
-            $table->foreignId('payee_id')->references('id')->on('users');
-            $table->jsonb('intermediarys_id');
+            $table->foreignId('payer_id')->references('id')->on('users')->comment('Id do pagador da despesa');
+            $table->jsonb('intermediaries')->comment('Dados dos intermediários da despesa');
         });
     }
 

@@ -30,53 +30,53 @@ class ExpenseRequest extends FormRequest
     {
         return [
             'name'                     => ['required', 'alpha'],
-            'priceTotal'               => ['required', 'decimal:0,2', 'numeric'],
+            'price_total'              => ['required', 'decimal:0,2', 'numeric'],
             'parcels'                  => ['required', 'integer'],
-            'payee_id'                 => ['required', 'integer', 'exists:users,id'],
-            'datePayment'              => ['required', 'date', 'after_or_equal:today'],
+            'payer_id'                 => ['required', 'integer', 'exists:users,id'],
+            'payment_date'             => ['required', 'date', 'after_or_equal:today'],
             'intermediary'             => ['required', 'boolean', function ($attribute, $value, $fail) {
-                if (!$value && $this->input('intermediarys')) {
+                if (!$value && $this->input('intermediaries')) {
                     $fail("O campo $attribute deve ser true quando os intermediários são informados.");
                 }
             }],
-            'intermediarys'            => ['array', Rule::requiredIf($this->input('intermediary'))],
-            'intermediarys.*.email'    => ['required', 'email', 'exists:users,email'],
-            'receiveNotification'      => ['required', 'boolean'],
+            'intermediaries'            => ['array', Rule::requiredIf($this->input('intermediary'))],
+            'intermediaries.*.email'    => ['required', 'email', 'exists:users,email'],
+            'receive_notification'     => ['required', 'boolean'],
         ];
     }
 
     public function messages(): array {
         return [
-        'name.required'                => 'O campo nome é obrigatório.',
-        'priceTotal.required'          => 'O campo preço é obrigatório.',
-        'parcels.required'             => 'O campo parcelas é obrigatório.',
-        'payee_id.required'            => 'O campo recebedor é obrigatório.',
-        'datePayment.required'         => 'A data de pagamento é obrigatória.',
-        'intermediary.required'        => 'O campo intermediary é obrigatório.',
-        'intermediarys.required'    => 'A lista de intermediários deve ser informada quando o campo intermediary é true.',
-        'receiveNotification.required' => 'O campo notification é obrigatório.',
+        'name.required'                 => 'O campo nome é obrigatório.',
+        'price_total.required'          => 'O campo preço é obrigatório.',
+        'parcels.required'              => 'O campo parcelas é obrigatório.',
+        'payer_id.required'             => 'O campo recebedor é obrigatório.',
+        'payment_date.required'         => 'A data de pagamento é obrigatória.',
+        'intermediary.required'         => 'O campo intermediary é obrigatório.',
+        'intermediaries.required'       => 'A lista de intermediários deve ser informada quando o campo intermediary é true.',
+        'receive_notification.required' => 'O campo notification é obrigatório.',
 
-        'parcels.integer'             => 'O campo parcelas deve ser um número inteiro.',
-        'payee_id.integer'            => 'O campo recebedor deve ser um número inteiro.',
-        'payee_id.exists'            => 'O receber informado não está cadastrado',
-        'intermediary.boolean'        => 'O campo intermediário deve ser verdadeiro ou falso.',
-        'receiveNotification.boolean' => 'O campo notification deve ser verdadeiro ou falso.',
+        'parcels.integer'              => 'O campo parcelas deve ser um número inteiro.',
+        'payer_id.integer'             => 'O campo recebedor deve ser um número inteiro.',
+        'payer_id.exists'              => 'O receber informado não está cadastrado',
+        'intermediary.boolean'         => 'O campo intermediário deve ser verdadeiro ou falso.',
+        'receive_notification.boolean' => 'O campo notification deve ser verdadeiro ou falso.',
         
-        'intermediarys.array'   => 'O campo intermediários deve ser uma lista (array).',
-        'intermediarys.*.email' => 'E-mail inválido dentro da lista de intermediários.',
-        'intermediarys.*.email.exists' => 'O e-mail do intermediário não foi cadastrado.',
+        'intermediaries.array'          => 'O campo intermediários deve ser uma lista (array).',
+        'intermediaries.*.email'        => 'E-mail inválido dentro da lista de intermediários.',
+        'intermediaries.*.email.exists' => 'O e-mail do intermediário não foi cadastrado.',
         
-        'datePayment.date'           => 'A data de pagamento deve ser uma data válida.',
-        'datePayment.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje.',
+        'payment_date.date'           => 'A data de pagamento deve ser uma data válida.',
+        'payment_date.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje.',
         
-        'priceTotal.decimal'          => 'O número máximo é de 2 casas.',
-        'priceTotal.numeric'          => 'O preço precisa ser um número.',
+        'price_total.decimal' => 'O número máximo é de 2 casas.',
+        'price_total.numeric' => 'O preço precisa ser um número.',
 
         'name.alpha' => 'O nome deve conter apenas letras.'
     ];
     }
 
     public function failedValidation(Validator $validator): HttpResponseException {
-        return $this->retornoExceptionErroRequest(false, 'Erro na criação de uma conta', 422, $validator->errors());
+        return $this->retornoExceptionErroRequest(false, 'Erro na criação de uma despesa', 422, $validator->errors());
     }
 }

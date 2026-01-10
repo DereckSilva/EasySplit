@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 
 class Expense extends Model
@@ -17,18 +18,22 @@ class Expense extends Model
      */
     protected $fillable = [
         'name',
-        'priceTotal',
+        'price_total',
         'parcels',
-        'datePayment',
+        'payment_date',
         'intermediary',
-        'payee_id',
-        'intermediarys',
+        'payer_id',
+        'intermediaries',
         'maturity',
-        'receiveNotification'
+        'receive_notification'
     ];
 
     public function user(): BelongsTo {
-        return $this->belongsTo(User::class, 'payee_id');
+        return $this->belongsTo(User::class, 'payer_id');
+    }
+
+    public function notification(): HasMany {
+        return $this->hasMany(Notification::class, 'notification_id', 'id');
     }
 
 }

@@ -18,7 +18,7 @@ class LoginController extends Controller
         // verifica se está autenticado dentro do sistema
         if (!in_array($request->url(), [url('/api/register/new-password')])) {
             if (!Auth::attempt($request->only('email', 'password'))) {
-                $this->retornoExceptionErroRequest(false, 'Usuário não autorizadosss', 403, []);
+                $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 403, []);
             }
         } else {
             $user             = $request->only('email', 'current_password');
@@ -33,7 +33,8 @@ class LoginController extends Controller
         return response()->json([
             'success'    => true,
             'token'      => $token,
-            'statusCode' => 200
+            'statusCode' => 200,
+            'message'    => 'Usuário autenticado com sucesso'
         ]);
     }
 

@@ -6,11 +6,16 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
+/* Status API */
+Route::get('/status', function (){
+  return response()->json(['message' => 'api funcionando corretamente']);
+});
+
 /* Register */
 Route::post('/register', [UserController::class, 'create']);
   
 /* Login */
-Route::get('/login', [LoginController::class, 'auth']);
+Route::post('/login', [LoginController::class, 'auth']);
 
 Route::middleware('auth:sanctum')->group(function () {
   /* Expense */

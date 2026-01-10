@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Trait\Request;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ExpenseRequestUpdate extends ExpenseRequest
 {
@@ -27,7 +25,7 @@ class ExpenseRequestUpdate extends ExpenseRequest
     public function rules(): array
     {
         $rulesExpenseCreate = parent::rules();
-        unset($rulesExpenseCreate['payee_id']);
+        unset($rulesExpenseCreate['payer_id']);
         $rulesExpenseUpdate = [
             'id' => ['required', 'integer']
         ];
@@ -37,7 +35,7 @@ class ExpenseRequestUpdate extends ExpenseRequest
 
     public function messages(): array {
         $messagesExpenseCreate = parent::messages();
-        unset($messagesExpenseCreate['payee_id']);
+        unset($messagesExpenseCreate['payer_id']);
         $messagesExpenseUpdate = [
             'id.required' => 'O id é obrigatório',
             'id.interger' => 'O id deve ser um número'

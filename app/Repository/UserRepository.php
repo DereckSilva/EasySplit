@@ -83,4 +83,8 @@ class UserRepository {
     return User::all()->toArray();
   }
 
+  public function updatePhoneNumber() {
+    
+  }
+
 }
