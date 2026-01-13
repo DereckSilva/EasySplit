@@ -14,20 +14,20 @@ class RegisterController {
   }
 
   public function create(): View {
-    
+
     return view(
       'register.user',
       ['message' => 'Usuário criado com sucesso']
     );
-    
+
   }
 
   public function updatePassword(): View {
-    
+
     return view(
       'register.password',
       ['message' => 'Senha atualizada com sucesso']
     );
-    
+
   }
 }

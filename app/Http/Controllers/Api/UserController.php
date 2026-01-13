@@ -2,24 +2,24 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTO\UserDTO;
 use App\Http\Requests\UserPasswordRequest;
 use App\Http\Requests\UserRequest;
+use App\Http\Requests\UserUpdatedRequest;
 use App\Jobs\EnviaEmail;
+use App\Repository\Interfaces\LogInterfaceRepository;
 use App\Repository\LogRepository;
 use App\Repository\UserRepository;
+use App\Service\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Date;
 
 class UserController extends Controller
 {
-    protected $userRepository;
-
-    protected $logRepository;
-
-    public function __construct(UserRepository $userRepository, LogRepository $logRepository) {
-        $this->userRepository = $userRepository;
-        $this->logRepository  = $logRepository;
-    }
+    public function __construct(
+        protected UserService $userService,
+        protected LogInterfaceRepository $logInterfaceRepository
+    ) {}
 
     public function create (UserRequest $request): JsonResponse {
         $user      = $request->all();
@@ -29,30 +29,42 @@ class UserController extends Controller
             return response()->json([
                 'status'     => false,
                 'message'    => 'O usuário precisa ser maior de idade para realizar um cadastro',
-                'statusCode' => 400
             ], 400);
         }
 
-        $user = $this->userRepository->create($user);
-        if ((int)$user['statusCode'] === 200) {
-            EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email']);
-        }
+        $userDTO = new UserDTO($user['name'], $user['email'], $user['password'], $birthdate, $user['phone_number']);
+        $user = $this->userService->createUser($userDTO);
 
-        $this->logRepository->gravaLog($user['data']['id'], "Usuário Email: {$user['data']['email']} e Nome: {$user['data']['name']} criado com sucesso!");
+        //EnviaEmail::dispatchSync($user['name'], $user['email']);
+        $this->logInterfaceRepository->gravaLog($user['id'], "Usuário Email: {$user['email']} e Nome: {$user['name']} criado com sucesso!");
 
-        return response()->json($user, $user['statusCode']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Usuário criado com sucesso!',
+            'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])],
+        201);
+    }
+
+    public function updated(UserUpdatedRequest $request): JsonResponse {
+
+        $user    = $request->only('id', 'name', 'email', 'phone_number', 'birthdate');
+        $user    = $this->userService->updateUser($user['id'], $user);
+        $userDTO = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Usuário atulizado com sucesso!',
+            'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])]);
     }
 
     public function updatePassword (UserPasswordRequest $userPasswordRequest): JsonResponse {
 
         $user = $userPasswordRequest->only('email', 'password', 'current_password');
         $user = $this->userRepository->updatePassword($user);
-        
+
         if (empty($user)) {
             return response()->json([
                 'status'     => false,
                 'message'    => 'Houve um erro ao tentar atualizar a senha do usuário',
-                'statusCode' => 400,
             ], 400);
         }
 

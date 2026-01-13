@@ -7,6 +7,7 @@ use App\Http\Requests\ExpenseRequest;
 use App\Http\Requests\ExpenseRequestUpdate;
 use App\Http\Requests\ImportExpenseRequest;
 use App\Repository\ExpenseRepository;
+use App\Service\ExpenseService;
 use App\Trait\ImportCSV;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -17,18 +18,16 @@ class ExpenseController extends Controller
 
     use ImportCSV;
 
-    protected $expenseRepository;
-
-    public function __construct(ExpenseRepository $expenseRepository) {
-        $this->expenseRepository = $expenseRepository;
-    }
+    public function __construct(
+        protected ExpenseService $expenseService
+    ){}
 
     public function create(ExpenseRequest $expenseRequest): JsonResponse {
         $expense = $expenseRequest->all();
 
         //valida data de pagamento
         $payment_date = $expense['payment_date'];
-        $currentDate = Carbon::now();
+        $currentDate  = Carbon::now();
         if (strtotime($currentDate) > $payment_date) {
             return response()->json([
                 'status' => false,
@@ -51,13 +50,13 @@ class ExpenseController extends Controller
 
         Gate::authorize('view', $expense);
 
-        return response()->json(!empty($expense) ? $expense->toArray() : [], 200);
+        return response()->json(!empty($expense) ? $expense->toArray() : []);
     }
 
     public function expenseNotification(ExpenseNotificationRequest $expenseRequest): JsonResponse {
         $expenseNot = $expenseRequest->all();
         $expense = $this->expenseRepository->expenseNotification($expenseNot);
-        return response()->json($expense, 200);
+        return response()->json($expense);
     }
 
     public function update(ExpenseRequestUpdate $expenseRequestUpdate): JsonResponse {
@@ -67,7 +66,7 @@ class ExpenseController extends Controller
         Gate::authorize('update', $expense);
 
         $expense = $this->expenseRepository->update($expense);
-        return response()->json($expense, 200);
+        return response()->json($expense);
     }
 
     public function remove (int $id): JsonResponse {
@@ -81,15 +80,25 @@ class ExpenseController extends Controller
             'status'  => true,
             'message' => 'Conta excluída com sucesso',
             'data'    => []
-        ], 200);
+        ]);
     }
 
     public function importExpenseFromCSV(ImportExpenseRequest $request): JsonResponse {
 
+        $teste = $this->expenseService->createExpense();
+        return response()->json(['message' => 'salve', 'data' => $teste], 201);
         // montar qual o cabeçalho para validação dos dados da despesa
 
         $this->import(array(), $request->file('expenseCSV')->getFilename(), $request->file('expenseCSV')->getContent(), ';', 26);
 
+        //
+
         return response()->json(['message' => 'salve'], 201);
     }
+
+
+    private function validatedRow(array $row): void {
+
+    }
+
 }

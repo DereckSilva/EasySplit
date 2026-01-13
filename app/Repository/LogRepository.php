@@ -3,11 +3,11 @@
 namespace App\Repository;
 
 use App\Models\Log;
-use DateTime;
+use App\Repository\Interfaces\LogInterfaceRepository;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
-class LogRepository {
+class LogRepository implements LogInterfaceRepository {
 
   protected $model = 'Logs';
 

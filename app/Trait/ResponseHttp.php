@@ -10,8 +10,7 @@ trait ResponseHttp {
      throw new HttpResponseException(response()->json([
             'success'    => $status,
             'message'    => $message,
-            'data'       => $data,
-            'statusCode' => $statusCode
+            'data'       => $data
         ], $statusCode));
   }
 }

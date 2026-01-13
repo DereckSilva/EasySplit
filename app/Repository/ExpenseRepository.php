@@ -5,13 +5,14 @@ namespace App\Repository;
 use App\Models\Expense;
 use App\Models\User;
 use App\Notifications\ExpenseNotification;
+use App\Repository\Interfaces\ExpenseInterfaceRepository;
 use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
-class ExpenseRepository {
+class ExpenseRepository implements ExpenseInterfaceRepository {
 
   use ResponseHttp;
 
@@ -84,11 +85,11 @@ class ExpenseRepository {
     }
   }
 
-  public function update(array $expense): array | HttpResponseException {
+  public function update(int $id, array $expense): array {
     DB::beginTransaction();
     try {
 
-      $expenseUp = $this->find($expense['id']);
+      $expenseUp = $this->find($id);
 
       if (empty($expenseUp)) {
         $this->retornoExceptionErroRequest(false, 'Conta não cadastrada.', 400, []);
@@ -191,4 +192,14 @@ class ExpenseRepository {
       return $this->retornoExceptionErroRequest(false, 'Erro: ' . $exception->getMessage(), 400, []);
     }
   }
+
+    public function all(): array
+    {
+        return [];
+    }
+
+    public function delete(int $id): bool
+    {
+        return false;
+    }
 }

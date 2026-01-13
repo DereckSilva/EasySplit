@@ -40,7 +40,7 @@ class VerificaVencimentoContas extends Command
 
             $exp  = $expenseRepository->find($expense['id']);
             $user = $exp->user()->first();
-            
+
             // realiza o envio da notificacao para o dono da conta - (contas não pagas)
             if (!$exp->paid) {
                 $this->sendNotification($user, $exp, $diff);

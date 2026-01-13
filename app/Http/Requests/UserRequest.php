@@ -32,7 +32,7 @@ class UserRequest extends FormRequest
             'name'         => ['required', 'min:5'],
             'email'        => ['required', 'email', 'unique:users,email'],
             'password'     => ['required', Password::min(8)->max(12)->letters()->numbers()->symbols(), 'confirmed' ],
-            'phone_number' => ['required', 'unique:users,phone_number', 'numeric', 'min:11', 'max: 14'],
+            'phone_number' => ['required', 'unique:users,phone_number', 'numeric', 'min_digits:11', 'max_digits:14'],
             'birthdate'    => ['required', 'date'],
         ];
     }
@@ -50,16 +50,16 @@ class UserRequest extends FormRequest
 
             'name.min'     => 'O nome precisa ter no mínimo 5 caracteres',
             'password.min' => 'A senha precisa ter no mínimo 8 caracteres',
-            'phone_number.min' => 'O telefone precisa ter no mínimo 11 caracteres',
+            'phone_number.min_digits' => 'O telefone precisa ter no mínimo 11 caracteres',
             'phone_number.numeric' => 'O telefone precisa ter apenas números',
 
             'password.max'     => 'A senha pode ter no máximo 12 caracteres',
-            'phone_number.max' => 'O telefone precisa ter no máximo 14 caracteres',
+            'phone_number.max_digits' => 'O telefone precisa ter no máximo 14 caracteres',
 
             'password.letters'   => 'A senha precisa ter no mínimo uma letra',
             'password.numbers'   => 'A senha precisa ter no mínimo um número',
             'password.symbols'   => 'A senha precisa ter no mínimo um símbolo',
-            'password.confirmed' => 'A confirmação da senha não confere',
+            'password.confirmed' => 'A password_confirmation da senha não confere ou não foi informada',
 
             'birthdate.date' => 'A data de nascimento é inválida ',
         ];

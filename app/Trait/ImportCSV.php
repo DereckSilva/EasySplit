@@ -8,6 +8,8 @@ use League\Csv\Statement;
 
 trait ImportCSV {
 
+    protected $data;
+
     public function import($header, $fileName, $content, $delimiter = ',', $totalLines = 0) {
 
         // salvando arquivo temporariamente
@@ -42,14 +44,15 @@ trait ImportCSV {
         }
 
 
-        $stmt = new Statement();
-
+        $stmt    = new Statement();
         $records = $stmt->process($csv);
 
         foreach ($records as $record) {
 
+
             collect($record)->each(function ($row) {
                 $rowExpense = explode(",", $row);
+                $this->validatedRow($rowExpense);
 
                 // realiza validação dos dados
                 dd('parei');
@@ -59,7 +62,5 @@ trait ImportCSV {
 
         Storage::disk('public')->delete($fileName);
     }
-
-    public function getTotalLines() {}
 
 }

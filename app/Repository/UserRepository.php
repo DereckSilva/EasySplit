@@ -2,36 +2,32 @@
 
 namespace App\Repository;
 
+use App\DTO\UserDTO;
 use App\Models\User;
+use App\Repository\Interfaces\UserInterfaceRepository;
 use App\Trait\ResponseHttp;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
-class UserRepository {
+class UserRepository implements UserInterfaceRepository {
 
   use ResponseHttp;
 
   protected $model = 'User';
 
-  public function create(array $user): array | HttpResponseException {
+  public function create(UserDTO $data): array | bool {
 
     DB::beginTransaction();
     try {
-      $user['password'] = bcrypt($user['password']);
-      $user = User::create($user);
+      $user = User::create($data->toArray());
       $user->save();
 
       DB::commit();
-      return [
-        'status'     => true,
-        'message'    => 'Usuário cadastrado com sucesso',
-        'statusCode' => 200,
-        'data' => $user->toArray()
-      ];
+      return $user->toArray();
     } catch (PDOException $exception) {
       DB::rollBack();
-      return $this->retornoExceptionErroRequest(false, 'Houve um erro ao criar o usuário: ' . $exception->getMessage(), 400, []);
+      return false;
     }
   }
 
@@ -60,31 +56,35 @@ class UserRepository {
 
   }
 
-  public function find(int|string $identifier, string $collumn = ''): array | User | HttpResponseException {
-    $user = !empty($collumn)
-      ? User::where($collumn, '=', $identifier)->first()
-      : User::find($identifier);
-    $user = !empty($collumn) ? $user : $user->toArray();
+  public function find(int|string $identifier, string $column = ''): array {
+    return !empty($column)
+      ? User::where($column, '=', $identifier)->first()->toArray()
+      : User::find($identifier)->toArray();
+  }
 
-    if (!empty($collumn) && $user instanceof User) {
-      return $user;
+    public function all(): array {
+      return User::all()->toArray();
     }
-    $notificationRepository  = app('App\Repository\NotificationRepository');
-    $user['notifications']   = $notificationRepository->findNotifications($identifier);
-    return [
-      'status'     => true,
-      'data'       => $user,
-      'message'    => 'Usuário encotrado com sucesso',
-      'statusCode' => 200
-    ];
-  }
 
-  public function findAll(): array {
-    return User::all()->toArray();
-  }
+    public function update($id, array $data): array | bool
+    {
+        DB::beginTransaction();
+        try {
+            User::where('id', $id)->update($data);
 
-  public function updatePhoneNumber() {
+            $user = User::find($id)->toArray();
 
-  }
+            DB::commit();
+            return $user;
+        } catch (PDOException $exception) {
+            DB::rollBack();
+            return false;
+        }
 
+    }
+
+    public function delete(int $id): bool
+    {
+        return false;
+    }
 }
