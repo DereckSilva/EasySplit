@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Models\Notification;
-use App\Trait\Request;
+use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Collection;
@@ -12,7 +12,7 @@ use PDOException;
 
 class NotificationRepository {
 
-  use Request;
+  use ResponseHttp;
 
   protected $model = 'notifications';
 

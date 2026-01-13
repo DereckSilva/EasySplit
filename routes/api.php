@@ -17,6 +17,8 @@ Route::post('/register', [UserController::class, 'create']);
 /* Login */
 Route::post('/login', [LoginController::class, 'auth']);
 
+Route::post('/import-expense', [ExpenseController::class, 'importExpenseFromCSV']);
+
 Route::middleware('auth:sanctum')->group(function () {
   /* Expense */
   Route::post('/expenses', [ExpenseController::class, 'create']);

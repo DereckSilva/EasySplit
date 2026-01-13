@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Trait\Request;
+use App\Trait\ResponseHttp;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 class ExpenseNotificationRequest extends FormRequest
 {
 
-    use Request;
+    use ResponseHttp;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -48,7 +48,7 @@ class ExpenseNotificationRequest extends FormRequest
             'owner_expense.notification.boolean'  => 'O campo de notificação do proprietário da despesa deve ser verdadeiro ou falso.',
             'owner_expense.expense.required'      => 'A identificação da despesa é obrigatória.',
             'owner_expense.expense.integer'       => 'O campo de expense deve ser inteiro.',
-            
+
             'intermediary_expense.required'                         => 'O campo intermediary_expense é obrigatório quando o owner não é informado.',
             'intermediary_expense.email.email'                      => 'O e-mail do intermediário deve ser um endereço de e-mail válido.',
             'intermediary_expense.email.required'                   => 'O e-mail do intermediário é obrigatório quando o campo está presente.',

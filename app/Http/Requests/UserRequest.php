@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rules\Password;
-use App\Trait\Request as RequestTrait;
+use App\Trait\ResponseHttp as RequestTrait;
 
 class UserRequest extends FormRequest
 {
@@ -55,7 +55,7 @@ class UserRequest extends FormRequest
 
             'password.max'     => 'A senha pode ter no máximo 12 caracteres',
             'phone_number.max' => 'O telefone precisa ter no máximo 14 caracteres',
-            
+
             'password.letters'   => 'A senha precisa ter no mínimo uma letra',
             'password.numbers'   => 'A senha precisa ter no mínimo um número',
             'password.symbols'   => 'A senha precisa ter no mínimo um símbolo',

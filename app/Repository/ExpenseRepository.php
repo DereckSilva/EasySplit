@@ -5,7 +5,7 @@ namespace App\Repository;
 use App\Models\Expense;
 use App\Models\User;
 use App\Notifications\ExpenseNotification;
-use App\Trait\Request;
+use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +13,7 @@ use PDOException;
 
 class ExpenseRepository {
 
-  use Request;
+  use ResponseHttp;
 
   protected $model = 'Expenses';
 
@@ -59,9 +59,9 @@ class ExpenseRepository {
           return !empty($dataInterm) && isset($dataInterm[$key]) ? $dataInterm[$key]['email'] : [];
         });
       }
-      
+
       $expense = Expense::create($expense);
-      
+
       // dispara a notificação
       if (!empty($intermediarios)) {
         collect($intermediarios)->each(function ($id) use ($userRepository, $expense) {
@@ -146,11 +146,11 @@ class ExpenseRepository {
       }
 
       if (isset($expenseNot['intermediary_expense']) && !empty($expenseNot['intermediary_expense'])) {
-        
+
         $errors = array();
         collect($expenseNot['intermediary_expense']['expenses'])->each(function ($expense) use ($expenseNot, &$errors) {
           $exp = $this->find($expense['id']);
-          
+
           if (empty($exp) || !$exp->intermediary) {
             $message = empty($exp) ? 'Despesa não encontrada.' : "A despesa {$exp->id} não possui intermediários.";
             return $this->retornoExceptionErroRequest(false, $message, 400, []);

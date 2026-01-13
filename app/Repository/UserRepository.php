@@ -3,14 +3,14 @@
 namespace App\Repository;
 
 use App\Models\User;
-use App\Trait\Request;
+use App\Trait\ResponseHttp;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
 class UserRepository {
 
-  use Request;
+  use ResponseHttp;
 
   protected $model = 'User';
 
@@ -65,7 +65,7 @@ class UserRepository {
       ? User::where($collumn, '=', $identifier)->first()
       : User::find($identifier);
     $user = !empty($collumn) ? $user : $user->toArray();
-    
+
     if (!empty($collumn) && $user instanceof User) {
       return $user;
     }
@@ -84,7 +84,7 @@ class UserRepository {
   }
 
   public function updatePhoneNumber() {
-    
+
   }
 
 }

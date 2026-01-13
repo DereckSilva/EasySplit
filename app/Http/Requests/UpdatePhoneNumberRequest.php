@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rules\Password;
-use App\Trait\Request as RequestTrait;
+use App\Trait\ResponseHttp as RequestTrait;
 
 class UpdatePhoneNumberRequest extends FormRequest
 {

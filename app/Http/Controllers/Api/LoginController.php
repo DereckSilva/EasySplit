@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Trait\Request;
+use App\Trait\ResponseHttp;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as HttpRequest;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class LoginController extends Controller
 {
 
-    use Request;
+    use ResponseHttp;
 
     public function auth(HttpRequest $request): JsonResponse | HttpResponseException {
 

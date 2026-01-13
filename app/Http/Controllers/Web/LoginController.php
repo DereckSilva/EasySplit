@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Web;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Trait\Request as RequestTrait;
+use App\Trait\ResponseHttp as RequestTrait;
 
 class LoginController {
 
