@@ -33,11 +33,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notification/{id}', [NotificationController::class, 'read']);
 
     /* Register */
-    Route::patch('/register/new-password', [UserController::class, 'updatePassword']);
 
     /* User */
     Route::prefix('user')->group(function () {
         Route::get('{id}', [UserController::class, 'show']);
         Route::patch('/updated', [UserController::class, 'updated']);
+        Route::patch('/new-password', [UserController::class, 'updatePassword']);
     });
 });

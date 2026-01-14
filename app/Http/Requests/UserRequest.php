@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\Rules\Password;
 use App\Trait\ResponseHttp as RequestTrait;
 
@@ -33,7 +34,11 @@ class UserRequest extends FormRequest
             'email'        => ['required', 'email', 'unique:users,email'],
             'password'     => ['required', Password::min(8)->max(12)->letters()->numbers()->symbols(), 'confirmed' ],
             'phone_number' => ['required', 'unique:users,phone_number', 'numeric', 'min_digits:11', 'max_digits:14'],
-            'birthdate'    => ['required', 'date'],
+            'birthdate'    => ['required', 'date', function ($attribute, $value, $fail) {
+                if ((Date::now()->year - Date::parse($value)->year) < 18) {
+                    $fail('O usuário precisa ser maior de idade para realizar um cadastro.');
+                }
+            }],
         ];
     }
 

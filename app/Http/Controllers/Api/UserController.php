@@ -24,16 +24,8 @@ class UserController extends Controller
     public function create (UserRequest $request): JsonResponse {
         $user      = $request->all();
         $birthdate = Date::parse($user['birthdate']);
-
-        if ((Date::now()->year - $birthdate->year) < 18) {
-            return response()->json([
-                'status'     => false,
-                'message'    => 'O usuário precisa ser maior de idade para realizar um cadastro',
-            ], 400);
-        }
-
-        $userDTO = new UserDTO($user['name'], $user['email'], $user['password'], $birthdate, $user['phone_number']);
-        $user = $this->userService->createUser($userDTO);
+        $userDTO   = new UserDTO($user['name'], $user['email'], $user['password'], $birthdate, $user['phone_number']);
+        $user      = $this->userService->createUser($userDTO);
 
         //EnviaEmail::dispatchSync($user['name'], $user['email']);
         $this->logInterfaceRepository->gravaLog($user['id'], "Usuário Email: {$user['email']} e Nome: {$user['name']} criado com sucesso!");
@@ -58,8 +50,10 @@ class UserController extends Controller
 
     public function updatePassword (UserPasswordRequest $userPasswordRequest): JsonResponse {
 
-        $user = $userPasswordRequest->only('email', 'password', 'current_password');
-        $user = $this->userRepository->updatePassword($user);
+        $user = $userPasswordRequest->only('id', 'email', 'password');
+        $user = isset($user['id']) && !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
+        $userDTO = new UserDTO($user['name'], $user['email'], $userPasswordRequest->only('password'), $user['birthdate'], $user['phone_number']);
+        $user    = $this->userService->updatePassword(array_merge($user, $userDTO->password));
 
         if (empty($user)) {
             return response()->json([
@@ -68,20 +62,25 @@ class UserController extends Controller
             ], 400);
         }
 
-        if ((int)$user['statusCode'] === 200) {
-            EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email'], true);
-        }
+        //EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email'], true);
 
-        $this->logRepository->gravaLog($user['data']['id'], "Usuário {$user['data']['email']} teve a sua senha alterada com sucesso!");
+        $this->logInterfaceRepository->gravaLog($user['id'], "Usuário {$user['email']} teve a sua senha alterada com sucesso!");
 
         return response()->json([
-            $user
-        ], $user['statusCode']);
+            'status' => true,
+            'message' => 'A senha do usuário foi atualizada com sucesso!',
+            'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])]
+        );
     }
 
     public function show(int $id): JsonResponse {
-        $user = $this->userRepository->find($id);
-        return response()->json($user, $user['statusCode']);
+        $user = $this->userService->findById($id);
+        $userDTO = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
+        return response()->json([
+            'status' => true,
+            'message' => 'Usuário encontrado com sucesso!',
+            'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])
+        ]);
     }
 
     public function updatePhoneNumber(): JsonResponse {

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\LoginRequest;
 use App\Trait\ResponseHttp;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
@@ -13,20 +13,11 @@ class LoginController extends Controller
 
     use ResponseHttp;
 
-    public function auth(HttpRequest $request): JsonResponse | HttpResponseException {
+    public function auth(LoginRequest $request): JsonResponse | HttpResponseException {
 
-        // verifica se está autenticado dentro do sistema
-        if (!in_array($request->url(), [url('/api/register/new-password')])) {
-            if (!Auth::attempt($request->only('email', 'password'))) {
-                $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 403, []);
-            }
-        } else {
-            $user             = $request->only('email', 'current_password');
-            $user['password'] = $user['current_password'];
-            unset($user['current_password']);
-            if (!Auth::attempt($user)) {
-                $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 403, []);
-            }
+        $user = $request->only('email', 'password');
+        if (!Auth::attempt($user)) {
+            $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 403, []);
         }
         $token = $request->user()->createToken('Token Usuario')->plainTextToken;
 
