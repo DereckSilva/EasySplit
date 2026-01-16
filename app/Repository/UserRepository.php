@@ -83,6 +83,17 @@ class UserRepository implements UserInterfaceRepository {
 
     public function delete(int $id): bool
     {
-        return false;
+        DB::beginTransaction();
+        try {
+            $user = User::find($id);
+            $user->userLogs()->delete();
+            $user->delete();
+            DB::commit();
+            return true;
+        } catch (PDOException $exception) {
+            DB::rollBack();
+            return false;
+        }
+
     }
 }

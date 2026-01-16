@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\DTO\UserDTO;
+use App\Http\Requests\UserDeleteRequest;
 use App\Http\Requests\UserPasswordRequest;
 use App\Http\Requests\UserRequest;
 use App\Http\Requests\UserUpdatedRequest;
 use App\Jobs\EnviaEmail;
-use App\Repository\Interfaces\LogInterfaceRepository;
-use App\Repository\LogRepository;
-use App\Repository\UserRepository;
 use App\Service\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Date;
@@ -17,8 +15,7 @@ use Illuminate\Support\Facades\Date;
 class UserController extends Controller
 {
     public function __construct(
-        protected UserService $userService,
-        protected LogInterfaceRepository $logInterfaceRepository
+        protected UserService $userService
     ) {}
 
     public function create (UserRequest $request): JsonResponse {
@@ -28,7 +25,6 @@ class UserController extends Controller
         $user      = $this->userService->createUser($userDTO);
 
         //EnviaEmail::dispatchSync($user['name'], $user['email']);
-        $this->logInterfaceRepository->gravaLog($user['id'], "Usuário Email: {$user['email']} e Nome: {$user['name']} criado com sucesso!");
 
         return response()->json([
             'status' => true,
@@ -42,6 +38,7 @@ class UserController extends Controller
         $user    = $request->only('id', 'name', 'email', 'phone_number', 'birthdate');
         $user    = $this->userService->updateUser($user['id'], $user);
         $userDTO = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
+
         return response()->json([
             'status' => true,
             'message' => 'Usuário atulizado com sucesso!',
@@ -64,13 +61,24 @@ class UserController extends Controller
 
         //EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email'], true);
 
-        $this->logInterfaceRepository->gravaLog($user['id'], "Usuário {$user['email']} teve a sua senha alterada com sucesso!");
 
         return response()->json([
             'status' => true,
             'message' => 'A senha do usuário foi atualizada com sucesso!',
             'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])]
         );
+    }
+
+    public function delete(UserDeleteRequest $deleteRequest): JsonResponse {
+        $user = $deleteRequest->only('id', 'email');
+        $user = isset($user['id']) && !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
+        $this->userService->delete($user['id']);
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Usuário excluído com sucesso!',
+            'data'    => []
+        ]);
     }
 
     public function show(int $id): JsonResponse {

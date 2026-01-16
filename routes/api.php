@@ -39,5 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{id}', [UserController::class, 'show']);
         Route::patch('/updated', [UserController::class, 'updated']);
         Route::patch('/new-password', [UserController::class, 'updatePassword']);
+        Route::delete('/delete', [UserController::class, 'delete']);
     });
 });

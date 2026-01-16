@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,7 +51,11 @@ class User extends Authenticatable
         ];
     }
 
-    public function userExpense(): HasOne {
+    public function userExpenses(): HasOne {
         return $this->hasOne(Expense::class, 'payer_id');
+    }
+
+    public function userLogs(): HasOne {
+        return $this->hasOne(Log::class, 'user_id');
     }
 }
