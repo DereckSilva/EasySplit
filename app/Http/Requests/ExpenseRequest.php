@@ -6,7 +6,7 @@ use App\Trait\ResponseHttp;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule;
+use function PHPUnit\Framework\isArray;
 
 class ExpenseRequest extends FormRequest
 {
@@ -28,6 +28,7 @@ class ExpenseRequest extends FormRequest
      */
     public function rules(): array
     {
+
         return [
             'name'                     => ['required', 'alpha'],
             'price_total'              => ['required', 'decimal:0,2', 'numeric'],
@@ -35,13 +36,15 @@ class ExpenseRequest extends FormRequest
             'payer_id'                 => ['required', 'integer', 'exists:users,id'],
             'payment_date'             => ['required', 'date', 'after_or_equal:today'],
             'intermediary'             => ['required', 'boolean', function ($attribute, $value, $fail) {
-                if (!$value && $this->input('intermediaries')) {
+                if (!$value && isArray($this->input('intermediaries'))) {
                     $fail("O campo $attribute deve ser true quando os intermediários são informados.");
                 }
             }],
-            'intermediaries'            => ['array', Rule::requiredIf($this->input('intermediary'))],
-            'intermediaries.*.email'    => ['required', 'email', 'exists:users,email'],
-            'receive_notification'     => ['required', 'boolean'],
+            'intermediaries'                => ['required_if:intermediary,true', 'array'],
+            'intermediaries.*.id'           => ['required_without:intermediaries.*.email', 'integer'],
+            'intermediaries.*.email'        => ['required_without:intermediaries.*.id', 'email', 'nullable'],
+            'intermediaries.*.phone_number' => ['string', 'numeric', 'min_digits:11', 'max_digits:14', 'nullable'],
+            'receive_notification'          => ['required', 'boolean'],
         ];
     }
 
@@ -62,9 +65,14 @@ class ExpenseRequest extends FormRequest
         'intermediary.boolean'         => 'O campo intermediário deve ser verdadeiro ou falso.',
         'receive_notification.boolean' => 'O campo notification deve ser verdadeiro ou falso.',
 
-        'intermediaries.array'          => 'O campo intermediários deve ser uma lista (array).',
-        'intermediaries.*.email'        => 'E-mail inválido dentro da lista de intermediários.',
-        'intermediaries.*.email.exists' => 'O e-mail do intermediário não foi cadastrado.',
+        'intermediaries.required_if'               => 'Os intermediários são obrigatórios quando o campo intermediary for TRUE',
+        'intermediaries.*.email.email'             => 'E-mail inválido dentro da lista de intermediários.',
+        'intermediaries.*.email.required_without'  => 'O e-mail do intermediário é obigatório quando o id não é informado.',
+        'intermediaries.*.id.required_without'     => 'O id do intermediário é obrigatório quando o e-mail não é informado.',
+        'intermediaries.*.email.exists'            => 'O intermediário não possui cadastro',
+        'intermediaries.*.phone_number.min_digits' => 'O telefone precisa ter no mínimo 11 caracteres',
+        'intermediaries.*.phone_number.numeric'    => 'O telefone precisa ter apenas números',
+        'intermediaries.*.phone_number.max_digits' => 'O telefone precisa ter no máximo 14 caracteres',
 
         'payment_date.date'           => 'A data de pagamento deve ser uma data válida.',
         'payment_date.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje.',

@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\GeminiController;
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Middleware\CheckCountRequest;
 use Illuminate\Support\Facades\Route;
 
 /* Status API */
@@ -22,7 +24,7 @@ Route::post('/import-expense', [ExpenseController::class, 'importExpenseFromCSV'
 Route::middleware('auth:sanctum')->group(function () {
 
     /* Expense */
-    Route::post('/expenses', [ExpenseController::class, 'create']);
+    Route::post('/expense', [ExpenseController::class, 'create']);
     Route::get('/expenses', [ExpenseController::class, 'index']);
     Route::get('/expense/{id}', [ExpenseController::class, 'show']);
     Route::patch('/expense', [ExpenseController::class, 'update']);
@@ -32,7 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     /* Notifications */
     Route::patch('/notification/{id}', [NotificationController::class, 'read']);
 
-    /* Register */
+    /* ChatBot */
+    Route::post('/chatBot', [GeminiController::class, 'chat'])->middleware(CheckCountRequest::class);
 
     /* User */
     Route::prefix('user')->group(function () {

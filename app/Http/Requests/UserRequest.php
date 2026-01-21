@@ -64,7 +64,7 @@ class UserRequest extends FormRequest
             'password.letters'   => 'A senha precisa ter no mínimo uma letra',
             'password.numbers'   => 'A senha precisa ter no mínimo um número',
             'password.symbols'   => 'A senha precisa ter no mínimo um símbolo',
-            'password.confirmed' => 'A password_confirmation da senha não confere ou não foi informada',
+            'password.confirmed' => 'A a senha de confirmação não confere ou não foi informada',
 
             'birthdate.date' => 'A data de nascimento é inválida ',
         ];

@@ -6,7 +6,6 @@ use App\Http\Requests\ExpenseNotificationRequest;
 use App\Http\Requests\ExpenseRequest;
 use App\Http\Requests\ExpenseRequestUpdate;
 use App\Http\Requests\ImportExpenseRequest;
-use App\Repository\ExpenseRepository;
 use App\Service\ExpenseService;
 use App\Trait\ImportCSV;
 use Carbon\Carbon;
@@ -21,6 +20,13 @@ class ExpenseController extends Controller
     public function __construct(
         protected ExpenseService $expenseService
     ){}
+
+    public function beforeCreate(array $data): array
+    {
+        // aqui vai ocorrer uma mini validação de informações antes da criação da conta
+
+        return $data;
+    }
 
     public function create(ExpenseRequest $expenseRequest): JsonResponse {
         $expense = $expenseRequest->all();

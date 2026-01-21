@@ -15,7 +15,10 @@ class ExpenseService
         private UserInterfaceRepository    $userInterfaceRepository
     ){}
 
-    public function createExpense() {
+    public function createExpense(array $expense) {
+
+
+
         return array('user' => $this->userInterfaceRepository->all(), 'expense' => $this->expenseInterfaceRepository->all());
     }
 
