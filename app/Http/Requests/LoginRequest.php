@@ -42,7 +42,7 @@ class LoginRequest extends FormRequest
             'password.min'     => 'A senha precisa ter no mínimo 8 caracteres',
             'password.max'     => 'A senha pode ter no máximo 12 caracteres',
             'password.letters' => 'A senha precisa ter no mínimo uma letra',
-            'passowrd.numbers' => 'A senha precisa ter no mínimo um número',
+            'password.numbers' => 'A senha precisa ter no mínimo um número',
             'password.symbols' => 'A senha precisa ter no mínimo um símbolo',
         ];
     }

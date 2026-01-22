@@ -10,6 +10,7 @@ use App\Service\ExpenseService;
 use App\Trait\ImportCSV;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class ExpenseController extends Controller
@@ -19,13 +20,16 @@ class ExpenseController extends Controller
 
     public function __construct(
         protected ExpenseService $expenseService
-    ){}
+    ){
+        parent::__construct();
+    }
 
-    public function beforeCreate(array $data): array
-    {
-        // aqui vai ocorrer uma mini validação de informações antes da criação da conta
+    public function validatedData(ExpenseRequest $request): Request {
+        $expenseValid = $request->all();
 
-        return $data;
+        // realizar validação de demais campos
+
+        return $request;
     }
 
     public function create(ExpenseRequest $expenseRequest): JsonResponse {

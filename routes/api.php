@@ -23,6 +23,9 @@ Route::post('/import-expense', [ExpenseController::class, 'importExpenseFromCSV'
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    /* Logout */
+    Route::post('/logout', [LoginController::class, 'logout']);
+
     /* Expense */
     Route::post('/expense', [ExpenseController::class, 'create']);
     Route::get('/expenses', [ExpenseController::class, 'index']);
