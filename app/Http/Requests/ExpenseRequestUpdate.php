@@ -27,7 +27,7 @@ class ExpenseRequestUpdate extends ExpenseRequest
         $rulesExpenseCreate = parent::rules();
         unset($rulesExpenseCreate['payer_id']);
         $rulesExpenseUpdate = [
-            'id' => ['required', 'integer']
+            'id' => ['required', 'integer', 'exists:expenses,id']
         ];
 
         return array_merge($rulesExpenseCreate, $rulesExpenseUpdate);
@@ -38,7 +38,8 @@ class ExpenseRequestUpdate extends ExpenseRequest
         unset($messagesExpenseCreate['payer_id']);
         $messagesExpenseUpdate = [
             'id.required' => 'O id é obrigatório',
-            'id.interger' => 'O id deve ser um número'
+            'id.integer' => 'O id deve ser um número',
+            'id.exists' => 'O id informado não existe',
         ];
 
         return array_merge($messagesExpenseCreate, $messagesExpenseUpdate);

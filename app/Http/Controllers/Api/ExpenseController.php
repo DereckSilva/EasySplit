@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTO\ExpenseDTO;
 use App\Http\Requests\ExpenseNotificationRequest;
 use App\Http\Requests\ExpenseRequest;
 use App\Http\Requests\ExpenseRequestUpdate;
@@ -12,10 +13,10 @@ use App\Trait\ImportCSV;
 use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ExpenseController extends Controller
 {
@@ -30,16 +31,24 @@ class ExpenseController extends Controller
     public function create(ExpenseRequest $expense): JsonResponse {
         $expense = $this->validatedData($expense->all());
 
-        dd($expense);
+        $expenseDto = new ExpenseDTO([
+            'description'          => $expense['description'],
+            'price_total'          => $expense['price_total'],
+            'parcels'              => $expense['parcels'],
+            'payer_id'             => $expense['payer_id'],
+            'payment_date'         => Carbon::parse($expense['payment_date']),
+            'intermediary'         => $expense['intermediary'],
+            'intermediaries'       => json_encode($expense['intermediaries']),
+            'maturity'             => Carbon::now(),
+            'receive_notification' => $expense['receive_notification']
+        ]);
 
-
-        // verifica campo de intermediarios
-        if (!isset($expense['intermediarys'])) {
-            $expense['intermediarys'] = json_encode([]);
-        }
-
-        $expense = $this->expenseRepository->create($expense);
-        return response()->json($expense, $expense['statusCode']);
+        $expense = $this->expenseService->createExpense($expenseDto);
+        return response()->json([
+            'status' => true,
+            'message' => 'Conta criada com sucesso',
+            'data' => $expense
+        ], ResponseAlias::HTTP_CREATED);
     }
 
     public function show(int $id): JsonResponse {
@@ -105,19 +114,26 @@ class ExpenseController extends Controller
         // valida os intermediários presentes
         if ($expense['intermediary'] && !empty($expense['intermediaries'])) {
             collect($expense['intermediaries'])->each(function ($intermediary) {
-
-                $key = array_filter(array_keys($intermediary), function ($k) {
-                    return $k == 'id';
-                });
-
-                if (!empty($key)) {
-                    $intermediaryFNF = $this->intermediaryService->findIntermediary('id', $intermediary['id']);
+                $keys = array_keys($intermediary);
+                if (count($keys) == 1 && (end($keys) == 'id' || end($keys) == 'email')) {
+                    $field = end($keys);
+                    $intermediaryFNF = $this->intermediaryService->findIntermediary($field, $intermediary[$field]);
                     if (empty($intermediaryFNF)) {
                         $this->retornoExceptionErroRequest(false,
-                            "O id do intermediário informado ({$intermediary['id']}) não existe. Por favor, informe o email e telefone para cadastro.",
+                            "O {$field} do intermediário informado ({$intermediary[$field]}) não existe. Por favor, informe o email e telefone para cadastro.",
                             404, []);
                     }
                 }
+
+                if (count($keys) == 2) {
+                    $intermediaryFNF = $this->intermediaryService->findIntermediary('email', $intermediary['email']);
+                    if (!empty($intermediaryFNF)) {
+                        $this->retornoExceptionErroRequest(false,
+                            "O email do intermediário informado ({$intermediary['email']}) já foi cadastrado. Por favor, informe apenas o id ou email para cadastro da conta.",
+                            404, []);
+                    }
+                }
+
             });
         }
 

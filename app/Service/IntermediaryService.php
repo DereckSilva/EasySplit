@@ -2,23 +2,26 @@
 
 namespace App\Service;
 
+use App\Repository\Interfaces\IntermediaryInterfaceRepository;
 use App\Repository\IntermediaryRepository;
 
 class IntermediaryService
 {
 
     public function __construct(
-        private IntermediaryRepository $intermediaryRepository
+        private IntermediaryInterfaceRepository $intermediaryInterfaceRepository
     ){}
 
-    public function createIntermediary(array $intermediary) {
-
-        dd($intermediary);
-        return $this->intermediaryRepository->create($intermediary);
+    public function createIntermediary(array $intermediary): array {
+        $intermediary = $this->intermediaryInterfaceRepository->create($intermediary);
+        if (!is_array($intermediary)) {
+            return [];
+        }
+        return $intermediary;
     }
 
-    public function findIntermediary(string $column, string | int $value) {
-        return $this->intermediaryRepository->find($column, $value);
+    public function findIntermediary(string $column, string | int $value): array {
+        return $this->intermediaryInterfaceRepository->find($column, $value);
     }
 
 }

@@ -6,7 +6,6 @@ use App\Trait\ResponseHttp;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use function PHPUnit\Framework\isArray;
 
 class ExpenseRequest extends FormRequest
 {
@@ -30,14 +29,14 @@ class ExpenseRequest extends FormRequest
     {
 
         return [
-            'name'                          => ['required', 'alpha'],
+            'description'                   => ['required', 'alpha'],
             'price_total'                   => ['required', 'decimal:0,2', 'numeric'],
             'parcels'                       => ['required', 'integer'],
             'payer_id'                      => ['required', 'integer', 'exists:users,id'],
             'payment_date'                  => ['required', 'date', 'after_or_equal:today'],
             'intermediary'                  => ['required', 'boolean', function ($attribute, $value, $fail) {
                 $intermediaries = $this->input('intermediaries');
-                if (!$value && !empty($intermediaries)) {
+                if (!$value && !empty($intermediaries) && !empty(end($intermediaries))) {
                     $fail("O campo $attribute precisa ser TRUE pois existe intermediáros informados");
                 }
             }],
@@ -45,8 +44,8 @@ class ExpenseRequest extends FormRequest
             'intermediaries.*'              => ['max:2', function ($attribute, $value, $fail) {
                 $keys = array_keys($value);
                 $id   = collect($value)->filter(function ($item, $key) { return $key == 'id'; })->toArray();
-                if (count($keys) == 2 && !empty($id)) {
-                    $fail("O id deve ser informador sozinho para o intermediário. Caso não saiba o id, deixe o campo com email e phone_number");
+                if (count($keys) > 1 && !empty($id)) {
+                    $fail("O id deve ser informado sozinho para o intermediário. Caso não saiba o id, deixe o campo com email e phone_number");
                 }
 
             }],
@@ -59,14 +58,14 @@ class ExpenseRequest extends FormRequest
 
     public function messages(): array {
         return [
-        'name.required'                 => 'O campo nome é obrigatório.',
-        'price_total.required'          => 'O campo preço é obrigatório.',
+        'description.required'          => 'O campo description é obrigatório.',
+        'price_total.required'          => 'O campo price_total é obrigatório.',
         'parcels.required'              => 'O campo parcelas é obrigatório.',
-        'payer_id.required'             => 'O campo recebedor é obrigatório.',
-        'payment_date.required'         => 'A data de pagamento é obrigatória.',
+        'payer_id.required'             => 'O campo payer_id é obrigatório.',
+        'payment_date.required'         => 'O campo payment_date é obrigatório.',
         'intermediary.required'         => 'O campo intermediary é obrigatório.',
         'intermediaries.required'       => 'O campo intermediaries é obrigatório. Informar na requisição [{}] caso seja vazio.',
-        'receive_notification.required' => 'O campo notification é obrigatório.',
+        'receive_notification.required' => 'O campo receive_notification é obrigatório.',
 
         'parcels.integer'              => 'O campo parcelas deve ser um número inteiro.',
         'payer_id.integer'             => 'O campo recebedor deve ser um número inteiro.',
@@ -89,7 +88,7 @@ class ExpenseRequest extends FormRequest
         'price_total.decimal' => 'O número máximo é de 2 casas.',
         'price_total.numeric' => 'O preço precisa ser um número.',
 
-        'name.alpha' => 'O nome deve conter apenas letras.'
+        'description.alpha' => 'O nome deve conter apenas letras.'
     ];
     }
 

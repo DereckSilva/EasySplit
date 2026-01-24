@@ -8,7 +8,7 @@ class IntermediaryDTO
     public $email;
     public $phoneNumber;
 
-    public function __construct( $email, $phoneNumber ) {
+    public function __construct($email, $phoneNumber ) {
         $this->email       = $email;
         $this->phoneNumber = $phoneNumber;
     }

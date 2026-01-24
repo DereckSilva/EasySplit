@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Intermediary extends Model
 {
-    protected $fillable = [ 'email', 'phoneNumber' ];
+    protected $fillable = [ 'email', 'phone_number' ];
 
 }

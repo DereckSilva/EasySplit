@@ -17,7 +17,7 @@ class Expense extends Model
      * @var array
      */
     protected $fillable = [
-        'name',
+        'description',
         'price_total',
         'parcels',
         'payment_date',

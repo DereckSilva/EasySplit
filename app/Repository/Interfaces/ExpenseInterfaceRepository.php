@@ -9,11 +9,11 @@ interface ExpenseInterfaceRepository
 {
     public function all(): array;
 
-    public function find(int $id): Expense| HttpResponseException;
+    public function find(int $id): array | bool;
 
-    public function create(array $data): array | HttpResponseException;
+    public function create(array $data): array | bool;
 
-    public function update(int $id, array $data): array;
+    public function update(int $id, array $data): array | bool;
 
     public function delete(int $id): bool;
 }
