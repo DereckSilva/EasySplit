@@ -30,19 +30,28 @@ class ExpenseRequest extends FormRequest
     {
 
         return [
-            'name'                     => ['required', 'alpha'],
-            'price_total'              => ['required', 'decimal:0,2', 'numeric'],
-            'parcels'                  => ['required', 'integer'],
-            'payer_id'                 => ['required', 'integer', 'exists:users,id'],
-            'payment_date'             => ['required', 'date', 'after_or_equal:today'],
-            'intermediary'             => ['required', 'boolean', function ($attribute, $value, $fail) {
-                if (!$value && isArray($this->input('intermediaries'))) {
-                    $fail("O campo $attribute deve ser true quando os intermediários são informados.");
+            'name'                          => ['required', 'alpha'],
+            'price_total'                   => ['required', 'decimal:0,2', 'numeric'],
+            'parcels'                       => ['required', 'integer'],
+            'payer_id'                      => ['required', 'integer', 'exists:users,id'],
+            'payment_date'                  => ['required', 'date', 'after_or_equal:today'],
+            'intermediary'                  => ['required', 'boolean', function ($attribute, $value, $fail) {
+                $intermediaries = $this->input('intermediaries');
+                if (!$value && !empty($intermediaries)) {
+                    $fail("O campo $attribute precisa ser TRUE pois existe intermediáros informados");
                 }
             }],
-            'intermediaries'                => ['required_if:intermediary,true', 'array'],
-            'intermediaries.*.id'           => ['required_without:intermediaries.*.email', 'integer'],
-            'intermediaries.*.email'        => ['required_without:intermediaries.*.id', 'email', 'nullable'],
+            'intermediaries'                => ['array','required'],
+            'intermediaries.*'              => ['max:2', function ($attribute, $value, $fail) {
+                $keys = array_keys($value);
+                $id   = collect($value)->filter(function ($item, $key) { return $key == 'id'; })->toArray();
+                if (count($keys) == 2 && !empty($id)) {
+                    $fail("O id deve ser informador sozinho para o intermediário. Caso não saiba o id, deixe o campo com email e phone_number");
+                }
+
+            }],
+            'intermediaries.*.id'           => ['integer'],
+            'intermediaries.*.email'        => ['email', 'nullable'],
             'intermediaries.*.phone_number' => ['string', 'numeric', 'min_digits:11', 'max_digits:14', 'nullable'],
             'receive_notification'          => ['required', 'boolean'],
         ];
@@ -56,7 +65,7 @@ class ExpenseRequest extends FormRequest
         'payer_id.required'             => 'O campo recebedor é obrigatório.',
         'payment_date.required'         => 'A data de pagamento é obrigatória.',
         'intermediary.required'         => 'O campo intermediary é obrigatório.',
-        'intermediaries.required'       => 'A lista de intermediários deve ser informada quando o campo intermediary é true.',
+        'intermediaries.required'       => 'O campo intermediaries é obrigatório. Informar na requisição [{}] caso seja vazio.',
         'receive_notification.required' => 'O campo notification é obrigatório.',
 
         'parcels.integer'              => 'O campo parcelas deve ser um número inteiro.',
@@ -65,7 +74,6 @@ class ExpenseRequest extends FormRequest
         'intermediary.boolean'         => 'O campo intermediário deve ser verdadeiro ou falso.',
         'receive_notification.boolean' => 'O campo notification deve ser verdadeiro ou falso.',
 
-        'intermediaries.required_if'               => 'Os intermediários são obrigatórios quando o campo intermediary for TRUE',
         'intermediaries.*.email.email'             => 'E-mail inválido dentro da lista de intermediários.',
         'intermediaries.*.email.required_without'  => 'O e-mail do intermediário é obigatório quando o id não é informado.',
         'intermediaries.*.id.required_without'     => 'O id do intermediário é obrigatório quando o e-mail não é informado.',
@@ -73,6 +81,7 @@ class ExpenseRequest extends FormRequest
         'intermediaries.*.phone_number.min_digits' => 'O telefone precisa ter no mínimo 11 caracteres',
         'intermediaries.*.phone_number.numeric'    => 'O telefone precisa ter apenas números',
         'intermediaries.*.phone_number.max_digits' => 'O telefone precisa ter no máximo 14 caracteres',
+        'intermediaries.*.max'                     => 'É necessário apenas dois campos para o intermediário',
 
         'payment_date.date'           => 'A data de pagamento deve ser uma data válida.',
         'payment_date.after_or_equal' => 'A data de pagamento deve ser igual ou posterior ao dia de hoje.',

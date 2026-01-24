@@ -7,43 +7,31 @@ use App\Http\Requests\ExpenseRequest;
 use App\Http\Requests\ExpenseRequestUpdate;
 use App\Http\Requests\ImportExpenseRequest;
 use App\Service\ExpenseService;
+use App\Service\IntermediaryService;
 use App\Trait\ImportCSV;
+use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Exceptions\HttpResponseException;
+
 use Illuminate\Support\Facades\Gate;
 
 class ExpenseController extends Controller
 {
 
-    use ImportCSV;
+    use ImportCSV, ResponseHttp;
 
     public function __construct(
-        protected ExpenseService $expenseService
-    ){
-        parent::__construct();
-    }
+        protected ExpenseService $expenseService,
+        protected IntermediaryService $intermediaryService
+    ){}
 
-    public function validatedData(ExpenseRequest $request): Request {
-        $expenseValid = $request->all();
+    public function create(ExpenseRequest $expense): JsonResponse {
+        $expense = $this->validatedData($expense->all());
 
-        // realizar validação de demais campos
+        dd($expense);
 
-        return $request;
-    }
-
-    public function create(ExpenseRequest $expenseRequest): JsonResponse {
-        $expense = $expenseRequest->all();
-
-        //valida data de pagamento
-        $payment_date = $expense['payment_date'];
-        $currentDate  = Carbon::now();
-        if (strtotime($currentDate) > $payment_date) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data de pagamento precisa ser igual ou maior que a data atual',
-            ], 400);
-        }
 
         // verifica campo de intermediarios
         if (!isset($expense['intermediarys'])) {
@@ -111,4 +99,28 @@ class ExpenseController extends Controller
 
     }
 
+
+    private function validatedData(array $expense): array | HttpResponseException {
+
+        // valida os intermediários presentes
+        if ($expense['intermediary'] && !empty($expense['intermediaries'])) {
+            collect($expense['intermediaries'])->each(function ($intermediary) {
+
+                $key = array_filter(array_keys($intermediary), function ($k) {
+                    return $k == 'id';
+                });
+
+                if (!empty($key)) {
+                    $intermediaryFNF = $this->intermediaryService->findIntermediary('id', $intermediary['id']);
+                    if (empty($intermediaryFNF)) {
+                        $this->retornoExceptionErroRequest(false,
+                            "O id do intermediário informado ({$intermediary['id']}) não existe. Por favor, informe o email e telefone para cadastro.",
+                            404, []);
+                    }
+                }
+            });
+        }
+
+        return $expense;
+    }
 }

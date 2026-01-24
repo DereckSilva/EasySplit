@@ -9,7 +9,7 @@ use App\Repository\NotificationRepository;
 use App\Trait\ResponseHttp;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class UserService
+class UserService extends BaseService
 {
 
     use ResponseHttp;
@@ -69,4 +69,38 @@ class UserService
         return true;
     }
 
+    public function beforeCreate(array $data): array
+    {
+        return $data;
+    }
+
+    public function afterCreate(array $data): array
+    {
+        return $data;
+    }
+
+    public function beforeUpdate(array $data): array
+    {
+        return $data;
+    }
+
+    public function afterUpdate(array $data): array
+    {
+        return $data;
+    }
+
+    public function beforeDelete(array $data): array
+    {
+        return $data;
+    }
+
+    public function afterDelete(array $data): array
+    {
+        return $data;
+    }
+
+    public function afterFind(array $data): array
+    {
+        return $data;
+    }
 }

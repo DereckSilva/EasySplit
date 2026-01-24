@@ -5,13 +5,11 @@ namespace App\Repository;
 use App\DTO\UserDTO;
 use App\Models\User;
 use App\Repository\Interfaces\UserInterfaceRepository;
-use App\Trait\ResponseHttp;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
 class UserRepository implements UserInterfaceRepository {
 
-  use ResponseHttp;
 
   protected string $model = 'User';
 
