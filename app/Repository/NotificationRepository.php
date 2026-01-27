@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Models\Notification;
+use App\Repository\Interfaces\NotificationInterfaceRepository;
 use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -10,13 +11,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
-class NotificationRepository {
+class NotificationRepository implements NotificationInterfaceRepository {
 
   use ResponseHttp;
 
   protected $model = 'notifications';
 
-  public function readNotification (string $id): array | HttpResponseException  {
+  public function readNotification (int $id): array {
     DB::beginTransaction();
     try {
 
@@ -35,14 +36,19 @@ class NotificationRepository {
       ];
     } catch (PDOException $exception) {
       DB::rollBack();
-      return $this->retornoExceptionErroRequest(false, $exception->getMessage(), 400, []);
+      return false;
     }
   }
 
-  public function findNotifications(int $userId): array {
-    return Notification::where('data->user_id', '=', $userId)
+  public function findNotificationFromUser(int $user): array {
+    return Notification::where('data->user_id', '=', $user)
       ->whereNull('read_at')
       ->get(['data'])->toArray();
+  }
+
+  public function findNotification(int $id): array {
+      $notifications = Notification::find($id);
+      return empty($notifications) ? false : $notifications->toArray();
   }
 
 }

@@ -31,7 +31,7 @@ class ExpenseNotificationRequest extends FormRequest
         return [
             'owner_expense'              => [Rule::requiredIf(!$this->input('intermediary_expense'))],
             'owner_expense.notification' => ['boolean', Rule::requiredIf($this->input('owner_expense'))],
-            'owner_expense.expense'      => ['integer', Rule::requiredIf($this->input('owner_expense'))],
+            'owner_expense.expense'      => ['integer', Rule::requiredIf($this->input('owner_expense')), 'exists:expenses,id'],
 
             'intermediary_expense'                         => [Rule::requiredIf(!$this->input('owner_expense'))],
             'intermediary_expense.email'                   => ['email', Rule::requiredIf($this->input('intermediary_expense'))],
@@ -48,6 +48,7 @@ class ExpenseNotificationRequest extends FormRequest
             'owner_expense.notification.boolean'  => 'O campo de notificação do proprietário da despesa deve ser verdadeiro ou falso.',
             'owner_expense.expense.required'      => 'A identificação da despesa é obrigatória.',
             'owner_expense.expense.integer'       => 'O campo de expense deve ser inteiro.',
+            'owner_expense.expense.exists'        => 'A despesa informada não existe no banco de dados.',
 
             'intermediary_expense.required'                         => 'O campo intermediary_expense é obrigatório quando o owner não é informado.',
             'intermediary_expense.email.email'                      => 'O e-mail do intermediário deve ser um endereço de e-mail válido.',

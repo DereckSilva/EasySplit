@@ -32,7 +32,7 @@ class Expense extends Model
         return $this->belongsTo(User::class, 'payer_id');
     }
 
-    public function notification(): HasMany {
+    public function notifications(): HasMany {
         return $this->hasMany(Notification::class, 'notification_id', 'id');
     }
 

@@ -14,8 +14,6 @@ use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
-
-use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ExpenseController extends Controller
@@ -52,25 +50,36 @@ class ExpenseController extends Controller
     }
 
     public function show(int $id): JsonResponse {
-        // revisar
-        $expense = $this->expenseRepository->find($id);
+        $expense = $this->expenseService->findExpense($id);
 
-        Gate::authorize('view', $expense);
+        if (empty($expense)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Conta não encontrada',
+                'data' => []
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
 
-        return response()->json(!empty($expense) ? $expense->toArray() : []);
+        return response()->json([
+            'status' => true,
+            'message' => 'Conta encontrada',
+            'data' => $expense
+        ], ResponseAlias::HTTP_FOUND);
     }
 
     public function expenseNotification(ExpenseNotificationRequest $expenseRequest): JsonResponse {
         $expenseNot = $expenseRequest->all();
-        $expense = $this->expenseRepository->expenseNotification($expenseNot);
-        return response()->json($expense);
+        $expense = $this->expenseService->expenseNotification($expenseNot);
+        return response()->json([
+            'status' => true,
+            'message' => 'Atualizado o recebimento de notificação da conta',
+            'data' => $expense
+        ]);
     }
 
     public function update(ExpenseRequestUpdate $expenseRequestUpdate): JsonResponse {
 
         $expense = $expenseRequestUpdate->all();
-
-        Gate::authorize('update', $expense);
 
         $expense = $this->expenseRepository->update($expense);
         return response()->json($expense);
@@ -78,16 +87,18 @@ class ExpenseController extends Controller
 
     public function remove (int $id): JsonResponse {
 
-        $expense = $this->expenseRepository->find($id);
-
-        Gate::authorize('delete', $expense);
-
-        $this->expenseRepository->remove($id);
+        $expense = $this->expenseService->delete($id);
+        if (!$expense) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Houve um erro ao tentar excluir a conta'
+            ]);
+        }
         return response()->json([
             'status'  => true,
             'message' => 'Conta excluída com sucesso',
             'data'    => []
-        ]);
+        ], ResponseAlias::HTTP_NO_CONTENT);
     }
 
     public function importExpenseFromCSV(ImportExpenseRequest $request): JsonResponse {

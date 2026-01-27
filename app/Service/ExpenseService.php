@@ -6,6 +6,7 @@ use App\DTO\ExpenseDTO;
 use App\DTO\IntermediaryDTO;
 use App\DTO\UserDTO;
 use App\Repository\Interfaces\ExpenseInterfaceRepository;
+use App\Repository\Interfaces\LogInterfaceRepository;
 use App\Repository\Interfaces\UserInterfaceRepository;
 use Carbon\Carbon;
 
@@ -15,7 +16,8 @@ class ExpenseService extends BaseService
     public function __construct(
         private ExpenseInterfaceRepository $expenseInterfaceRepository,
         private UserInterfaceRepository    $userInterfaceRepository,
-        private IntermediaryService $intermediaryService
+        private IntermediaryService $intermediaryService,
+        private LogInterfaceRepository $logInterfaceRepository
     ){}
 
     public function createExpense(ExpenseDTO $expense): array {
@@ -51,8 +53,21 @@ class ExpenseService extends BaseService
         return $this->afterCreate($expense);
     }
 
-    public function createIntermediaryFromExpense(IntermediaryDTO $intermediaryDTO) {
+    public function findExpense(int $id): array {
+        $expense = $this->expenseInterfaceRepository->find($id);
+        return empty($expense) ? [] : $this->afterFind($expense);
+    }
+
+    public function delete(int $id): bool {
+        return $this->expenseInterfaceRepository->delete($id);
+    }
+
+    public function createIntermediaryFromExpense(IntermediaryDTO $intermediaryDTO): array {
         return $this->intermediaryService->createIntermediary($intermediaryDTO->toArray());
+    }
+
+    public function expenseNotification(array $data): array {
+        return $this->expenseInterfaceRepository->expenseNotification($data);
     }
 
     public function beforeCreate(array $data): array
@@ -65,6 +80,7 @@ class ExpenseService extends BaseService
         $expense        = new ExpenseDTO($data);
         $intermediaries = json_decode($expense->intermediaries, true);
         $user           = $this->userInterfaceRepository->find($expense->payerId, 'id');
+        $this->logInterfaceRepository->gravaLog($user['id'], "Conta criada com sucesso para o usuário {$user['name']}!");
         $payer          = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
 
         return [
@@ -103,6 +119,7 @@ class ExpenseService extends BaseService
 
     public function afterFind(array $data): array
     {
-        return $data;
+        // parcial
+        return $this->afterCreate($data);
     }
 }

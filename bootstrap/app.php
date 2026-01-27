@@ -19,5 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('app:verifica-vencimento-contas');
+        $schedule->command('app:verifica-vencimento-contas')->daily();
+        $schedule->command('app:verifica-tokens-expirados')->weekdays()->at('00:00');
     })->create();

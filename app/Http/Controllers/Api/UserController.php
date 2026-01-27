@@ -11,6 +11,7 @@ use App\Jobs\EnviaEmail;
 use App\Service\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Date;
+use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
 {
@@ -30,7 +31,7 @@ class UserController extends Controller
             'status' => true,
             'message' => 'Usuário criado com sucesso!',
             'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])],
-        201);
+        Response::HTTP_CREATED);
     }
 
     public function updated(UserUpdatedRequest $request): JsonResponse {
@@ -48,7 +49,7 @@ class UserController extends Controller
     public function updatePassword (UserPasswordRequest $userPasswordRequest): JsonResponse {
 
         $user = $userPasswordRequest->only('id', 'email', 'password');
-        $user = isset($user['id']) && !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
+        $user = !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
         $userDTO = new UserDTO($user['name'], $user['email'], $userPasswordRequest->only('password'), $user['birthdate'], $user['phone_number']);
         $user    = $this->userService->updatePassword(array_merge($user, $userDTO->password));
 
@@ -56,7 +57,7 @@ class UserController extends Controller
             return response()->json([
                 'status'     => false,
                 'message'    => 'Houve um erro ao tentar atualizar a senha do usuário',
-            ], 400);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         //EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email'], true);
@@ -71,14 +72,14 @@ class UserController extends Controller
 
     public function delete(UserDeleteRequest $deleteRequest): JsonResponse {
         $user = $deleteRequest->only('id', 'email');
-        $user = isset($user['id']) && !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
+        $user = !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
         $this->userService->delete($user['id']);
 
         return response()->json([
             'status'  => true,
             'message' => 'Usuário excluído com sucesso!',
             'data'    => []
-        ]);
+        ], Response::HTTP_NO_CONTENT);
     }
 
     public function show(int $id): JsonResponse {
@@ -88,7 +89,7 @@ class UserController extends Controller
             'status' => true,
             'message' => 'Usuário encontrado com sucesso!',
             'data' => $userDTO->toResponse($user['id'], $user['updated_at'], $user['created_at'])
-        ]);
+        ], Response::HTTP_FOUND);
     }
 
     public function updatePhoneNumber(): JsonResponse {

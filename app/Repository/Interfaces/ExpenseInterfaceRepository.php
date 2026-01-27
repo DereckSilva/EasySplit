@@ -9,7 +9,7 @@ interface ExpenseInterfaceRepository
 {
     public function all(): array;
 
-    public function find(int $id): array | bool;
+    public function find(int $id): array;
 
     public function create(array $data): array | bool;
 

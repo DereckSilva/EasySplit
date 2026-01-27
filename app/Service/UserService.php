@@ -37,7 +37,7 @@ class UserService extends BaseService
     public function updateUser(int $id, array $user): array | HttpResponseException {
 
         $userUp                  = $this->userInterfaceRepository->update($id, $user);
-        $userUp['notifications'] = $this->notificationRepository->findNotifications($id);
+        $userUp['notifications'] = $this->notificationRepository->findNotificationFromUser($id);
 
         $this->logInterfaceRepository->gravaLog($userUp['id'], "Usuário {$userUp['email']} foi atualizado!");
 

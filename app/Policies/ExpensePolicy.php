@@ -21,15 +21,15 @@ class ExpensePolicy
      */
     public function view(User $user, Expense $expense): bool
     {
-        return $user->id === $expense->payeer_id;
+        return $user->id === $expense->payer_id;
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, int $payerId): bool
     {
-        return false;
+        return $user->id === $payerId;
     }
 
     /**
@@ -37,7 +37,7 @@ class ExpensePolicy
      */
     public function update(User $user, Expense $expense): bool
     {
-        return $user->id === $expense->payeer_id;
+        return $user->id === $expense->payer_id;
     }
 
     /**
@@ -45,7 +45,7 @@ class ExpensePolicy
      */
     public function delete(User $user, Expense $expense): bool
     {
-        return $user->id === $expense->payeer_id;
+        return $user->id === $expense->payer_id;
     }
 
 }
