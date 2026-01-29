@@ -27,9 +27,9 @@ class ExpensePolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, int $payerId): bool
+    public function create(User $user, Expense $expense): bool
     {
-        return $user->id === $payerId;
+        return $user->id === $expense->payer_id;
     }
 
     /**

@@ -12,8 +12,14 @@ class ExpenseObservable
      */
     public function updated(Expense $expense): void
     {
-        $user = $expense->user()->first();
-        $expense->notify(new ExpenseNotification($user, $expense, 'Conta atualizada pelo dono:'));
+        $user = $expense->user;
+        $user->notify(new ExpenseNotification($user, $expense, 'Conta atualizada pelo dono:'));
+    }
+
+    public function created(Expense $expense): void
+    {
+        $user = $expense->user;
+        $user->notify(new ExpenseNotification($user, $expense, 'Conta criada pelo dono:'));
     }
 
     /**
@@ -21,8 +27,8 @@ class ExpenseObservable
      */
     public function deleted(Expense $expense): void
     {
-        $user = $expense->user()->first();
-        $expense->notify(new ExpenseNotification($user, $expense, 'Conta removida pelo dono:'));
+        $user = $expense->user;
+        $user->notify(new ExpenseNotification($user, $expense, 'Conta removida pelo dono:'));
     }
 
 }

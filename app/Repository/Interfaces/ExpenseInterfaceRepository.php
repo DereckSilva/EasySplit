@@ -2,12 +2,9 @@
 
 namespace App\Repository\Interfaces;
 
-use App\Models\Expense;
-use Illuminate\Http\Exceptions\HttpResponseException;
-
 interface ExpenseInterfaceRepository
 {
-    public function all(): array;
+    public function all(int $idUser): array;
 
     public function find(int $id): array;
 

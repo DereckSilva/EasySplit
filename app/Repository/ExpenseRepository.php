@@ -19,17 +19,8 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
     DB::beginTransaction();
     try {
         $expense = Expense::create($data);
-        $expense->save();
-
-        // dispara a notificação -> validar posteriormente
-        if (!empty(json_decode($expense->intermediaries, true))) {
-            collect($expense->intermediaries)->each(function () use ($expense) {
-                $expense->notify(new ExpenseNotification($expense->user(), $expense, 'Conta criada pelo usuário: '));
-            });
-        }
         $this->verifiedAuth('create', $expense);
-
-
+        $expense->save();
         DB::commit();
         return $expense->toArray();
     } catch (PDOException $exception) {
@@ -65,8 +56,8 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
     return $expense->toArray();
   }
 
-  public function findAll(): array {
-    return Expense::all()->toArray();
+  public function all(int $idUser): array {
+    return Expense::all()->where('payer_id', '=', $idUser)->toArray();
   }
 
   public function delete(int $id): bool {
@@ -137,9 +128,4 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
       return false;
     }
   }
-
-    public function all(): array
-    {
-        return [];
-    }
 }

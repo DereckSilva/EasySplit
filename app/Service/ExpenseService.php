@@ -9,6 +9,7 @@ use App\Repository\Interfaces\ExpenseInterfaceRepository;
 use App\Repository\Interfaces\LogInterfaceRepository;
 use App\Repository\Interfaces\UserInterfaceRepository;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ExpenseService extends BaseService
 {
@@ -56,6 +57,11 @@ class ExpenseService extends BaseService
     public function findExpense(int $id): array {
         $expense = $this->expenseInterfaceRepository->find($id);
         return empty($expense) ? [] : $this->afterFind($expense);
+    }
+
+    public function findAll(): array {
+        // ajustar retorno para o response
+        return $this->expenseInterfaceRepository->all(Auth::user()->id);
     }
 
     public function delete(int $id): bool {

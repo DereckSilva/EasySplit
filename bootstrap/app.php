@@ -4,6 +4,9 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,7 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->reportable(function (RouteNotFoundException $e) {
+            throw new HttpResponseException(response()->json([
+                'status' => false,
+                'message' => 'Verifique o token de envio',
+                'data' => []
+            ], Response::HTTP_FORBIDDEN));
+        });
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('app:verifica-vencimento-contas')->daily();

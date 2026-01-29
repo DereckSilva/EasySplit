@@ -19,20 +19,21 @@ Route::post('/register', [UserController::class, 'create']);
 /* Login */
 Route::post('/login', [LoginController::class, 'auth']);
 
-Route::post('/import-expense', [ExpenseController::class, 'importExpenseFromCSV']);
-
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
 
     /* Logout */
     Route::post('/logout', [LoginController::class, 'logout']);
 
     /* Expense */
-    Route::post('/expense', [ExpenseController::class, 'create']);
-    Route::get('/expenses', [ExpenseController::class, 'index']);
-    Route::get('/expense/{id}', [ExpenseController::class, 'show']);
-    Route::patch('/expense', [ExpenseController::class, 'update']);
-    Route::delete('/expense/{id}', [ExpenseController::class, 'remove']);
-    Route::patch('/expense-notification', [ExpenseController::class, 'expenseNotification']);
+    Route::prefix('expense')->group(function () {
+        Route::post('', [ExpenseController::class, 'create']);
+        Route::get('', [ExpenseController::class, 'all']);
+        Route::get('/{id}', [ExpenseController::class, 'show']);
+        Route::patch('', [ExpenseController::class, 'update']);
+        Route::delete('/{id}', [ExpenseController::class, 'remove']);
+        Route::patch('/notification', [ExpenseController::class, 'expenseNotification']);
+        Route::post('/import', [ExpenseController::class, 'importExpenseFromCSV']);
+    });
 
     /* Notifications */
     Route::patch('/notification/{id}', [NotificationController::class, 'read']);

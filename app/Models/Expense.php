@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Notifications\Notifiable;
 
 class Expense extends Model
 {
 
-    use Notifiable;
 
     /**
      * Atributos que podem ser altertados
@@ -30,10 +27,6 @@ class Expense extends Model
 
     public function user(): BelongsTo {
         return $this->belongsTo(User::class, 'payer_id');
-    }
-
-    public function notifications(): HasMany {
-        return $this->hasMany(Notification::class, 'notification_id', 'id');
     }
 
 }

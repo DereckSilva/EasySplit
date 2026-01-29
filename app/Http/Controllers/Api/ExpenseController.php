@@ -101,6 +101,14 @@ class ExpenseController extends Controller
         ], ResponseAlias::HTTP_NO_CONTENT);
     }
 
+    public function all(): JsonResponse {
+        return response()->json([
+            'status' => true,
+            'message' => 'Lista de contas',
+            'data' => $this->expenseService->findAll()
+        ], ResponseAlias::HTTP_OK);
+    }
+
     public function importExpenseFromCSV(ImportExpenseRequest $request): JsonResponse {
 
         $teste = $this->expenseService->createExpense();
