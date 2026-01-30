@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
+use function PHPUnit\Framework\isBool;
 
 class ExpenseController extends Controller
 {
@@ -87,12 +88,21 @@ class ExpenseController extends Controller
 
     public function remove (int $id): JsonResponse {
 
+        $findExpense = $this->expenseService->findExpense($id);
+
+        if (empty($findExpense)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Nenhuma conta encontrada com o id informado'
+            ], ResponseAlias::HTTP_NOT_FOUND);
+        }
+
         $expense = $this->expenseService->delete($id);
         if (!$expense) {
             return response()->json([
                 'status' => false,
                 'message' => 'Houve um erro ao tentar excluir a conta'
-            ]);
+            ], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
         }
         return response()->json([
             'status'  => true,

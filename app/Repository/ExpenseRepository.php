@@ -66,7 +66,6 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
         $expense = Expense::find($id);
         $this->verifiedAuth('delete', $expense);
 
-        $expense->notifications()->delete();
         $expense->delete();
         DB::commit();
         return true;

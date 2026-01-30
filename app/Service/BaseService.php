@@ -4,6 +4,9 @@ namespace App\Service;
 
 abstract class BaseService
 {
+
+    abstract public function formatResponse(array $data): array;
+
     abstract public function beforeCreate(array $data): array;
 
     abstract public function afterCreate(array $data): array;

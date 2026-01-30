@@ -29,7 +29,7 @@ class ExpenseRequest extends FormRequest
     {
 
         return [
-            'description'                   => ['required', 'alpha'],
+            'description'                   => ['required', 'string'],
             'price_total'                   => ['required', 'decimal:0,2', 'numeric'],
             'parcels'                       => ['required', 'integer'],
             'payer_id'                      => ['required', 'integer', 'exists:users,id'],
@@ -88,7 +88,7 @@ class ExpenseRequest extends FormRequest
         'price_total.decimal' => 'O número máximo é de 2 casas.',
         'price_total.numeric' => 'O preço precisa ser um número.',
 
-        'description.alpha' => 'O nome deve conter apenas letras.'
+        'description.string' => 'O campo descrição deve ser uma string',
     ];
     }
 

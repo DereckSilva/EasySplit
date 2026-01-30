@@ -50,7 +50,7 @@ class ExpenseService extends BaseService
 
         $expense->intermediaries = json_encode($intermediaries);
         $expense = $this->beforeCreate($expense->toArray());
-        $this->expenseInterfaceRepository->create($expense);
+        $expense = $this->expenseInterfaceRepository->create($expense);
         return $this->afterCreate($expense);
     }
 
@@ -60,12 +60,18 @@ class ExpenseService extends BaseService
     }
 
     public function findAll(): array {
-        // ajustar retorno para o response
-        return $this->expenseInterfaceRepository->all(Auth::user()->id);
+        return collect($this->expenseInterfaceRepository->all(Auth::user()->id))->map(function ($expense) {
+            return $this->formatResponse($expense);
+        })->toArray();
     }
 
     public function delete(int $id): bool {
-        return $this->expenseInterfaceRepository->delete($id);
+        $removeExp = $this->expenseInterfaceRepository->delete($id);
+        if (!$removeExp) {
+            return false;
+        }
+        $this->logInterfaceRepository->gravaLog(Auth::user()->id, "Conta removida com sucesso pelo usuário " . Auth::user()->name);
+        return true;
     }
 
     public function createIntermediaryFromExpense(IntermediaryDTO $intermediaryDTO): array {
@@ -76,6 +82,19 @@ class ExpenseService extends BaseService
         return $this->expenseInterfaceRepository->expenseNotification($data);
     }
 
+    public function formatResponse(array $data): array
+    {
+        $expense        = new ExpenseDTO($data);
+        $intermediaries = json_decode($expense->intermediaries, true);
+        $user           = $this->userInterfaceRepository->find($expense->payerId, 'id');
+        $payer          = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
+
+        return array_merge($expense->toResponse(), [
+            'payer'          => $payer->toResponse($user['id'], $user['created_at'], $user['updated_at']),
+            'intermediaries' => $intermediaries
+        ]);
+    }
+
     public function beforeCreate(array $data): array
     {
         return $data;
@@ -83,24 +102,8 @@ class ExpenseService extends BaseService
 
     public function afterCreate(array $data): array
     {
-        $expense        = new ExpenseDTO($data);
-        $intermediaries = json_decode($expense->intermediaries, true);
-        $user           = $this->userInterfaceRepository->find($expense->payerId, 'id');
-        $this->logInterfaceRepository->gravaLog($user['id'], "Conta criada com sucesso para o usuário {$user['name']}!");
-        $payer          = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
-
-        return [
-            'description'          => $expense->description,
-            'price_total'          => $expense->priceTotal,
-            'parcels'              => $expense->parcels,
-            'payment_date'         => $expense->paymentDate,
-            'intermediary'         => $expense->intermediary,
-            'maturity'             => $expense->maturity,
-            'receive_notification' => $expense->receiveNotification,
-
-            'payer'          => $payer->toResponse($user['id'], $user['created_at'], $user['updated_at']),
-            'intermediaries' => $intermediaries
-        ];
+        $this->logInterfaceRepository->gravaLog(Auth::user()->id, "Conta criada com sucesso para o usuário " . Auth::user()->name);
+        return $this->formatResponse($data);
     }
 
     public function beforeUpdate(array $data): array
@@ -125,7 +128,6 @@ class ExpenseService extends BaseService
 
     public function afterFind(array $data): array
     {
-        // parcial
-        return $this->afterCreate($data);
+        return $this->formatResponse($data);
     }
 }
