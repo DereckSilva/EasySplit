@@ -32,11 +32,9 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
   public function update(int $id, array $data): array | bool {
     DB::beginTransaction();
     try {
-
-      Expense::where('id', $id)->update($data);
       $expense = Expense::find($id);
       $this->verifiedAuth('update', $expense);
-
+      $expense->update($data);
       DB::commit();
       return $expense->toArray();
     } catch (PDOException $exception) {

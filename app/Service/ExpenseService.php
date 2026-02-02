@@ -54,6 +54,15 @@ class ExpenseService extends BaseService
         return $this->afterCreate($expense);
     }
 
+    public function updateExpense(ExpenseDTO $expense): array {
+        $expense->paymentDate = Carbon::parse($expense->paymentDate)->toDateString();
+        $expense->maturity    = Carbon::parse($expense->maturity)->toDateString();
+
+        $expense = $this->beforeUpdate($expense->toArray());
+        $expense = $this->expenseInterfaceRepository->update($expense['id'], $expense);
+        return $this->afterUpdate($expense);
+    }
+
     public function findExpense(int $id): array {
         $expense = $this->expenseInterfaceRepository->find($id);
         return empty($expense) ? [] : $this->afterFind($expense);
@@ -113,7 +122,8 @@ class ExpenseService extends BaseService
 
     public function afterUpdate(array $data): array
     {
-        return $data;
+        $this->logInterfaceRepository->gravaLog(Auth::user()->id, "Conta atualizada com sucesso para o usuário " . Auth::user()->name);
+        return $this->formatResponse($data);
     }
 
     public function beforeDelete(array $data): array

@@ -29,9 +29,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('', [ExpenseController::class, 'create']);
         Route::get('', [ExpenseController::class, 'all']);
         Route::get('/{id}', [ExpenseController::class, 'show']);
-        Route::patch('', [ExpenseController::class, 'update']);
+        Route::put('', [ExpenseController::class, 'update']);
         Route::delete('/{id}', [ExpenseController::class, 'remove']);
-        Route::patch('/notification', [ExpenseController::class, 'expenseNotification']);
+        Route::put('/notification', [ExpenseController::class, 'expenseNotification']);
         Route::post('/import', [ExpenseController::class, 'importExpenseFromCSV']);
     });
 

@@ -28,19 +28,8 @@ class ExpenseController extends Controller
     ){}
 
     public function create(ExpenseRequest $expense): JsonResponse {
-        $expense = $this->validatedData($expense->all());
-
-        $expenseDto = new ExpenseDTO([
-            'description'          => $expense['description'],
-            'price_total'          => $expense['price_total'],
-            'parcels'              => $expense['parcels'],
-            'payer_id'             => $expense['payer_id'],
-            'payment_date'         => Carbon::parse($expense['payment_date']),
-            'intermediary'         => $expense['intermediary'],
-            'intermediaries'       => json_encode($expense['intermediaries']),
-            'maturity'             => Carbon::now(),
-            'receive_notification' => $expense['receive_notification']
-        ]);
+        $expense    = $this->validatedData($expense->all());
+        $expenseDto = new ExpenseDTO($expense);
 
         $expense = $this->expenseService->createExpense($expenseDto);
         return response()->json([
@@ -79,11 +68,14 @@ class ExpenseController extends Controller
     }
 
     public function update(ExpenseRequestUpdate $expenseRequestUpdate): JsonResponse {
-
-        $expense = $expenseRequestUpdate->all();
-
-        $expense = $this->expenseRepository->update($expense);
-        return response()->json($expense);
+        $expense = $this->validatedData($expenseRequestUpdate->all());
+        $expenseDto = new ExpenseDTO($expense);
+        $expense = $this->expenseService->updateExpense($expenseDto);
+        return response()->json([
+            'status' => true,
+            'message' => 'Conta atualizada com sucesso',
+            'data' => $expense
+        ]);
     }
 
     public function remove (int $id): JsonResponse {
@@ -140,32 +132,46 @@ class ExpenseController extends Controller
 
     private function validatedData(array $expense): array | HttpResponseException {
 
-        // valida os intermediários presentes
-        if ($expense['intermediary'] && !empty($expense['intermediaries'])) {
-            collect($expense['intermediaries'])->each(function ($intermediary) {
-                $keys = array_keys($intermediary);
-                if (count($keys) == 1 && (end($keys) == 'id' || end($keys) == 'email')) {
-                    $field = end($keys);
-                    $intermediaryFNF = $this->intermediaryService->findIntermediary($field, $intermediary[$field]);
-                    if (empty($intermediaryFNF)) {
-                        $this->retornoExceptionErroRequest(false,
-                            "O {$field} do intermediário informado ({$intermediary[$field]}) não existe. Por favor, informe o email e telefone para cadastro.",
-                            404, []);
-                    }
-                }
-
-                if (count($keys) == 2) {
-                    $intermediaryFNF = $this->intermediaryService->findIntermediary('email', $intermediary['email']);
-                    if (!empty($intermediaryFNF)) {
-                        $this->retornoExceptionErroRequest(false,
-                            "O email do intermediário informado ({$intermediary['email']}) já foi cadastrado. Por favor, informe apenas o id ou email para cadastro da conta.",
-                            404, []);
-                    }
-                }
-
-            });
+        // valida os intermediários presentes -> REFATORAR
+        if (empty($expense['intermediaries'])) {
+            return $this->formatExpense($expense);
         }
+        collect($expense['intermediaries'])->each(function ($intermediary) {
+            $keys = array_keys($intermediary);
+            if (count($keys) == 1 && (end($keys) == 'id' || end($keys) == 'email')) {
+                $field = end($keys);
+                $intermediaryFNF = $this->intermediaryService->findIntermediary($field, $intermediary[$field]);
+                if (empty($intermediaryFNF)) {
+                    $this->retornoExceptionErroRequest(false,
+                        "O {$field} do intermediário informado ({$intermediary[$field]}) não existe. Por favor, informe o email e telefone para cadastro.",
+                        404, []);
+                }
+            }
 
-        return $expense;
+            if (count($keys) == 2) {
+                $intermediaryFNF = $this->intermediaryService->findIntermediary('email', $intermediary['email']);
+                if (!empty($intermediaryFNF)) {
+                    $this->retornoExceptionErroRequest(false,
+                        "O email do intermediário informado ({$intermediary['email']}) já foi cadastrado. Por favor, informe apenas o id ou email para cadastro da conta.",
+                        404, []);
+                }
+            }
+
+        });
+
+        return $this->formatExpense($expense);
+    }
+
+    private function formatExpense(array $expense): array {
+        $expenseValidated = [
+            'description'          => $expense['description'],
+            'price_total'          => $expense['price_total'],
+            'parcels'              => $expense['parcels'],
+            'payer_id'             => $expense['payer_id'],
+            'payment_date'         => Carbon::parse($expense['payment_date'])->format('d/m/Y'),
+            'intermediary'         => $expense['intermediary'],
+            'intermediaries'       => $expense['intermediaries'],
+        ];
+        return key_exists('id', $expense) ? array_merge(['id' => $expense['id']], $expenseValidated) : $expenseValidated;
     }
 }

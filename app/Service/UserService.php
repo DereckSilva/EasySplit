@@ -103,4 +103,9 @@ class UserService extends BaseService
     {
         return $data;
     }
+
+    public function formatResponse(array $data): array
+    {
+        return [];
+    }
 }
