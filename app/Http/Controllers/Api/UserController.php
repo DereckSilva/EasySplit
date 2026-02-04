@@ -84,6 +84,14 @@ class UserController extends Controller
 
     public function show(int $id): JsonResponse {
         $user = $this->userService->findById($id);
+
+        if (empty($user)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Usuário não encontrado'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
         $userDTO = new UserDTO($user['name'], $user['email'], '', $user['birthdate'], $user['phone_number']);
         return response()->json([
             'status' => true,

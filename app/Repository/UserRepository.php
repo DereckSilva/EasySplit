@@ -49,9 +49,10 @@ class UserRepository implements UserInterfaceRepository {
     }
 
     public function find(int|string $identifier, string $column = ''): array {
-        return !empty($column)
-          ? User::where($column, '=', $identifier)->first()->toArray()
-          : User::find($identifier)->toArray();
+        $user = !empty($column)
+          ? User::where($column, '=', $identifier)->first()
+          : User::find($identifier);
+        return empty($user) ? [] : $user->toArray();
     }
 
     public function findUserCustom(array $data): array {
