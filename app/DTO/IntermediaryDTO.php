@@ -5,8 +5,8 @@ namespace App\DTO;
 class IntermediaryDTO
 {
 
-    public $email;
-    public $phoneNumber;
+    public string $email;
+    public string $phoneNumber;
 
     public function __construct($email, $phoneNumber ) {
         $this->email       = $email;

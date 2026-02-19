@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Cache;
 class GeminiService
 {
 
-    private $client;
-    private $apiKey;
-    private $baseUrl;
+    private Client $client;
+    private string $apiKey;
+    private string $baseUrl;
 
     public function __construct(){
         $this->apiKey = env('GEMINI_API_KEY');
@@ -20,7 +20,6 @@ class GeminiService
 
     public function chatService(string $message, array $functions) {
 
-        return ['message' => 'acessado tantas vezes ' . Cache::get('chatBot')];
         $url = ("{$this->baseUrl}?key={$this->apiKey}");
         $body = [
             'contents' => [
@@ -31,7 +30,8 @@ class GeminiService
             ]
         ];
 
-        /*$body['tools'] = [
+        // refatorar para não ficar gigante essa função
+        $body['tools'] = [
             'function_declarations' => [
                 // função para criar uma conta
                 [
@@ -47,7 +47,7 @@ class GeminiService
 
                 // função para buscar as despesas por categoria
             ]
-        ];*/
+        ];
 
         try {
             $response = $this->client->post($url, [

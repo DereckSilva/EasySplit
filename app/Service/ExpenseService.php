@@ -68,8 +68,8 @@ class ExpenseService extends BaseService
         return empty($expense) ? [] : $this->afterFind($expense);
     }
 
-    public function findAll(): array {
-        return collect($this->expenseInterfaceRepository->all(Auth::user()->id))->map(function ($expense) {
+    public function findAll($intermediary = false): array {
+        return collect($this->expenseInterfaceRepository->all(Auth::user()->id, $intermediary))->map(function ($expense) {
             return $this->formatResponse($expense);
         })->toArray();
     }
@@ -87,8 +87,14 @@ class ExpenseService extends BaseService
         return $this->intermediaryService->createIntermediary($intermediaryDTO->toArray());
     }
 
-    public function expenseNotification(array $data): array {
-        return $this->expenseInterfaceRepository->expenseNotification($data);
+    public function expenseNotification(array $data): bool {
+
+        $owner         = isset($data['owner']) ? $data['owner'] : [];
+        $intermediary  = isset($data['intermediary']) ? $data['intermediary'] : [];
+
+        $this->updateNotificationOwnerIntermediary($intermediary, true);
+        $this->updateNotificationOwnerIntermediary($owner);
+        return true;
     }
 
     public function formatResponse(array $data): array
@@ -139,5 +145,17 @@ class ExpenseService extends BaseService
     public function afterFind(array $data): array
     {
         return $this->formatResponse($data);
+    }
+
+    private function updateNotificationOwnerIntermediary(array $data, $intermediary = false): void {
+
+        if (empty($data)) {
+            return;
+        }
+
+        $dataUpdate       = !$intermediary ? ['receive_notification' => $data['notification']] : ['data->notification' => $data['notification']];
+        $columnIdentifier = !$intermediary ? 'id' : 'data->id';
+        $this->expenseInterfaceRepository->updateAllRegistersFromUser($columnIdentifier, Auth::user()->id, $dataUpdate);
+
     }
 }

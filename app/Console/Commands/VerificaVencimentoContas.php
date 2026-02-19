@@ -5,11 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Expense;
 use App\Models\User;
 use App\Notifications\ExpenseNotification;
-use App\Service\ExpenseService;
-use App\Service\UserService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class VerificaVencimentoContas extends Command
 {
@@ -40,7 +37,7 @@ class VerificaVencimentoContas extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $expenses = $this->expenseModel::all();
 
@@ -49,7 +46,7 @@ class VerificaVencimentoContas extends Command
         collect($expenses)->each(function ($expense) {
             $maturity    = Carbon::parse($expense['maturity']);
             $currentDate = Carbon::now();
-            $diff        = (int)$currentDate->diffInDays($maturity->toString(), false);
+            $diff        = (int)$currentDate->diffInDays($maturity->toString());
 
             $exp  = $this->expenseModel::find($expense['id']);
             $user = $this->userModel::find($exp['payer_id']);
@@ -71,13 +68,13 @@ class VerificaVencimentoContas extends Command
     }
 
     private function sendNotification(User $user, Expense $expense, int $diff): void {
-        $mensagens = [
+        $messages = [
             0  => 'Chegou o dia do vencimento da conta do',
             5  => 'Faltam 5 dias para o vencimento da conta do',
             10 => 'Faltam 10 dias para o vencimento da conta do'
         ];
-        if (in_array($diff, array_keys($mensagens))) {
-            $user->notify(new ExpenseNotification($user, $expense, $mensagens[$diff]));
+        if (in_array($diff, array_keys($messages))) {
+            $user->notify(new ExpenseNotification($user, $expense, $messages[$diff]));
         }
     }
 }

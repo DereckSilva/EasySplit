@@ -61,7 +61,7 @@ class UserRepository implements UserInterfaceRepository {
     }
 
     public function all(): array {
-        return User::all()->toArray();
+        return User::paginate(100)->toArray();
     }
 
     public function update($id, array $data): array | bool

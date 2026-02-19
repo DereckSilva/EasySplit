@@ -3,9 +3,9 @@
 namespace App\Repository;
 
 use App\Models\Expense;
-use App\Notifications\ExpenseNotification;
 use App\Repository\Interfaces\ExpenseInterfaceRepository;
 use App\Trait\VerifiedAuthorization;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
@@ -54,75 +54,44 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
     return $expense->toArray();
   }
 
-  public function all(int $idUser): array {
-    return Expense::all()->where('payer_id', '=', $idUser)->toArray();
+    public function all(int $idUser, bool $intermediary = false): array {
+      // VALIDAR AQUI
+      return Expense::chunk(100, function (Collection $expenses) use ($idUser, $intermediary) {
+            return $expenses->filter(function ($expense) use ($idUser, $intermediary) {
+                return !$intermediary
+                    ? $expense->payer_id == $idUser
+                    : collect(json_decode($expense->intermediaries, true))->filter(function ($intermediary) use ($idUser) {
+                        return $intermediary['id'] == $idUser;
+                    });
+        });
+    })->toArray();
+  }
+
+  public function updateAllRegistersFromUser(string $column, string | int $emailOrId, array $attributes): bool {
+      DB::beginTransaction();
+      try {
+          // validar para o owner e intermediario (whereJsonContains)
+          Expense::where($column, $emailOrId)->update($attributes);
+          DB::commit();
+          return true;
+      } catch (PDOException $exception) {
+          DB::rollBack();
+          return false;
+      }
   }
 
   public function delete(int $id): bool {
-    DB::beginTransaction();
-    try {
-        $expense = Expense::find($id);
-        $this->verifiedAuth('delete', $expense);
+        DB::beginTransaction();
+        try {
+            $expense = Expense::find($id);
+            $this->verifiedAuth('delete', $expense);
 
-        $expense->delete();
-        DB::commit();
-        return true;
-    } catch (PDOException $exception) {
-        DB::rollBack();
-        return false;
+            $expense->delete();
+            DB::commit();
+            return true;
+        } catch (PDOException $exception) {
+            DB::rollBack();
+            return false;
+        }
     }
-  }
-
-  public function expenseNotification(array $expenseNot): array | bool {
-    DB::beginTransaction();
-    try {
-
-      // REFATORAR
-      // atualiza recebimento de notificação da conta
-      $expense = $this->find($expenseNot['owner_expense']['expense']);
-      $expense->receive_notification = $expenseNot['owner_expense']['notification'];
-
-      if (!empty($expenseNot['intermediary_expense'])) {
-
-        // REFATORAR
-        $errors = array();
-        collect($expenseNot['intermediary_expense']['expenses'])->each(function ($expense) use ($expenseNot, &$errors) {
-          $exp = $this->find($expense['id']);
-
-          if (empty($exp) || !$exp->intermediary) {
-            $message = empty($exp) ? 'Despesa não encontrada.' : "A despesa {$exp->id} não possui intermediários.";
-            return $this->retornoExceptionErroRequest(false, $message, 400, []);
-          }
-
-          $intermediaries  = json_decode($exp->intermediaries, true);
-          $notFoundInterm = collect($intermediaries)->filter(function ($intermediary) use ($expenseNot) {
-            return $intermediary['email'] == $expenseNot['intermediary_expense']['email'];
-          })->toArray();
-
-          if (empty($notFoundInterm)) {
-            return $this->retornoExceptionErroRequest(false, 'Intermediário não encontrado.', 400, []);
-          }
-
-          $intermediaries = collect($intermediaries)->map(function ($intermediary) use ($expense, $expenseNot) {
-            if (isset($intermediary['notification']) && $intermediary['email'] == $expenseNot['intermediary_expense']['email']) {
-              $intermediary['notification'] = $expense['notification'];
-            }
-            return $intermediary;
-          })->toJson();
-          $exp->intermediaries = $intermediaries;
-        });
-      }
-
-      if (!empty($errors)) {
-        return $errors;
-      }
-
-      $expense->save();
-      DB::commit();
-      return $expense->toArray();
-    } catch (PDOException $exception) {
-      DB::rollBack();
-      return false;
-    }
-  }
 }

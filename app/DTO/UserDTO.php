@@ -7,11 +7,11 @@ use DateTime;
 class UserDTO
 {
 
-    public $name;
-    public $email;
-    public $password;
-    public $birthDate;
-    public $phoneNumber;
+    public string $name;
+    public string $email;
+    public string $password;
+    public string $birthDate;
+    public string $phoneNumber;
 
     public function __construct( $name, $email, $password, $birthDate, $phoneNumber ) {
         $this->name        = $name;

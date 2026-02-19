@@ -21,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('App\Repository\Interfaces\NotificationInterfaceRepository', 'App\Repository\NotificationRepository');
         $this->app->bind('App\Repository\Interfaces\UserInterfaceRepository', 'App\Repository\UserRepository');
         $this->app->bind('App\Repository\Interfaces\IntermediaryInterfaceRepository', 'App\Repository\IntermediaryRepository');
+        $this->app->bind('App\Repository\Interfaces\NotificationTypeInterfaceRepository', 'App\Repository\NotificationTypeRepository');
     }
 
     /**

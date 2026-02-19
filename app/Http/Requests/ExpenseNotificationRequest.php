@@ -29,36 +29,18 @@ class ExpenseNotificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'owner_expense'              => [Rule::requiredIf(!$this->input('intermediary_expense'))],
-            'owner_expense.notification' => ['boolean', Rule::requiredIf($this->input('owner_expense'))],
-            'owner_expense.expense'      => ['integer', Rule::requiredIf($this->input('owner_expense')), 'exists:expenses,id'],
-
-            'intermediary_expense'                         => [Rule::requiredIf(!$this->input('owner_expense'))],
-            'intermediary_expense.email'                   => ['email', Rule::requiredIf($this->input('intermediary_expense'))],
-            'intermediary_expense.expenses'                => ['array', Rule::requiredIf($this->input('intermediary_expense'))],
-            'intermediary_expense.expenses.*.id'           => ['integer', Rule::requiredIf($this->input('intermediary_expense'))],
-            'intermediary_expense.expenses.*.notification' => ['boolean', Rule::requiredIf($this->input('intermediary_expense'))],
+            'owner.notification'        => [Rule::requiredIf($this->has('owner')), 'boolean'],
+            'intermediary.notification' => [Rule::requiredIf($this->has('intermediary')), 'boolean'],
         ];
     }
 
     public function messages(): array {
         return [
-            'owner_expense.required'              => 'O campo owner_expense é obrigatório quando não é informado os intermediários.',
-            'owner_expense.notification.required' => 'Você deve informar se deseja receber notificações.',
-            'owner_expense.notification.boolean'  => 'O campo de notificação do proprietário da despesa deve ser verdadeiro ou falso.',
-            'owner_expense.expense.required'      => 'A identificação da despesa é obrigatória.',
-            'owner_expense.expense.integer'       => 'O campo de expense deve ser inteiro.',
-            'owner_expense.expense.exists'        => 'A despesa informada não existe no banco de dados.',
+            'owner.notification.required' => 'Deve-se informar se o owner deseja ou não receber notificações',
+            'owner.notification.boolean'  => 'O campo notification deve ser verdadeiro ou falso',
 
-            'intermediary_expense.required'                         => 'O campo intermediary_expense é obrigatório quando o owner não é informado.',
-            'intermediary_expense.email.email'                      => 'O e-mail do intermediário deve ser um endereço de e-mail válido.',
-            'intermediary_expense.email.required'                   => 'O e-mail do intermediário é obrigatório quando o campo está presente.',
-            'intermediary_expense.expenses.array'                   => 'O campo de despesas do intermediário deve ser um array.',
-            'intermediary_expense.expenses.required'                => 'As despesas do intermediário são obrigatórias quando o campo está presente.',
-            'intermediary_expense.expenses.*.id.integer'            => 'O ID de cada despesa do intermediário deve ser um número inteiro.',
-            'intermediary_expense.expenses.*.id.required'           => 'O ID de cada despesa do intermediário é obrigatório quando o campo está presente.',
-            'intermediary_expense.expenses.*.notification.boolean'  => 'O campo de notificação deve ser verdadeiro ou falso para cada despesa do intermediário.',
-            'intermediary_expense.expenses.*.notification.required' => 'O campo de notificação é obrigatório para cada despesa do intermediário quando o campo está presente.',
+            'intermediary.notification.boolean'  => 'O campo notification deve ser verdadeiro ou falso',
+            'intermediary.notification.required' => 'Deve-se informase se o intermediário deseja ou não receber notificações'
         ];
     }
 

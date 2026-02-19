@@ -44,21 +44,21 @@ class UserRequest extends FormRequest
 
     public function messages(): array {
         return [
-            'name.required'       => 'O nome é obrigatório',
-            'email.required'      => 'O email é obrigatório',
-            'password.required'   => 'A senha é obrigatória',
-            'birthdate.required' => 'A data de nascimento é obrigatória',
+            'name.required'         => 'O nome é obrigatório',
+            'email.required'        => 'O email é obrigatório',
+            'password.required'     => 'A senha é obrigatória',
+            'birthdate.required'    => 'A data de nascimento é obrigatória',
             'phone_number.required' => 'O telefone é obrigatório',
 
-            'email.unique' => 'O e-mail informado já foi cadastrado.',
+            'email.unique'        => 'O e-mail informado já foi cadastrado.',
             'phone_number.unique' => 'O telefone informado já foi cadastrado.',
 
-            'name.min'     => 'O nome precisa ter no mínimo 5 caracteres',
-            'password.min' => 'A senha precisa ter no mínimo 8 caracteres',
+            'name.min'                => 'O nome precisa ter no mínimo 5 caracteres',
+            'password.min'            => 'A senha precisa ter no mínimo 8 caracteres',
             'phone_number.min_digits' => 'O telefone precisa ter no mínimo 11 caracteres',
-            'phone_number.numeric' => 'O telefone precisa ter apenas números',
+            'phone_number.numeric'    => 'O telefone precisa ter apenas números',
 
-            'password.max'     => 'A senha pode ter no máximo 12 caracteres',
+            'password.max'            => 'A senha pode ter no máximo 12 caracteres',
             'phone_number.max_digits' => 'O telefone precisa ter no máximo 14 caracteres',
 
             'password.letters'   => 'A senha precisa ter no mínimo uma letra',

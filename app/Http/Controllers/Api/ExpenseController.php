@@ -15,7 +15,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
-use function PHPUnit\Framework\isBool;
 
 class ExpenseController extends Controller
 {
@@ -59,11 +58,24 @@ class ExpenseController extends Controller
 
     public function expenseNotification(ExpenseNotificationRequest $expenseRequest): JsonResponse {
         $expenseNot = $expenseRequest->all();
+
+        if (empty($expenseNot)) {
+            return response()->json([], ResponseAlias::HTTP_NO_CONTENT);
+        }
+
         $expense = $this->expenseService->expenseNotification($expenseNot);
+
+        if (!$expense) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Houve um problema no processamento de atualização das notificações dos owners e/ou intermediários'
+            ]);
+        }
+
         return response()->json([
             'status' => true,
-            'message' => 'Atualizado o recebimento de notificação da conta',
-            'data' => $expense
+            'message' => 'Todas as contas dos owners e/ou intermediários tiveram as notificações atualizadas com sucesso',
+            'data' => []
         ]);
     }
 

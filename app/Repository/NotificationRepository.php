@@ -6,8 +6,6 @@ use App\Models\Notification;
 use App\Repository\Interfaces\NotificationInterfaceRepository;
 use App\Trait\ResponseHttp;
 use Carbon\Carbon;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
@@ -17,7 +15,7 @@ class NotificationRepository implements NotificationInterfaceRepository {
 
   protected $model = 'notifications';
 
-  public function readNotification (int $id): array {
+  public function readNotification (int $id): array | bool {
     DB::beginTransaction();
     try {
 
@@ -46,7 +44,7 @@ class NotificationRepository implements NotificationInterfaceRepository {
       ->get(['data'])->toArray();
   }
 
-  public function findNotification(int $id): array {
+  public function findNotification(int $id): array | bool {
       $notifications = Notification::find($id);
       return empty($notifications) ? false : $notifications->toArray();
   }

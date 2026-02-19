@@ -18,7 +18,7 @@ class IntermediaryRepository implements IntermediaryInterfaceRepository
 
     public function find(string $column, string | int $value): array
     {
-        $intermediary = Intermediary::where($column, $value)->get()->toArray();
+        $intermediary = Intermediary::where($column, $value)->first()->toArray();
         return empty($intermediary) ? [] : $intermediary[0];
     }
 
