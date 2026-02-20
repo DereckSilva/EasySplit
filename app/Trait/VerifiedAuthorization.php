@@ -15,7 +15,7 @@ trait VerifiedAuthorization
         try {
             Gate::authorize($ability, $model);
         } catch (\Exception $e) {
-            $this->retornoExceptionErroRequest(false, 'Este usuário não possui permissão para realizar essa ação.', Response::HTTP_UNAUTHORIZED, []);
+            $this->returnExceptionErrorRequest(false, 'Este usuário não possui permissão para realizar essa ação.', Response::HTTP_UNAUTHORIZED, []);
         }
         return true;
     }

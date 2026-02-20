@@ -4,14 +4,11 @@ namespace App\Repository;
 
 use App\Models\Notification;
 use App\Repository\Interfaces\NotificationInterfaceRepository;
-use App\Trait\ResponseHttp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use PDOException;
 
 class NotificationRepository implements NotificationInterfaceRepository {
-
-  use ResponseHttp;
 
   protected $model = 'notifications';
 

@@ -16,7 +16,7 @@ class LoginController {
     $user = $request->only('email', 'password');
 
     if (!Auth::attempt($user)) {
-      return $this->retornoExceptionErroRequest(false, 'Usuário não existe ou credencias inválidas', 404, []);
+      return $this->returnExceptionErrorRequest(false, 'Usuário não existe ou credencias inválidas', 404, []);
     }
 
     return redirect('/');

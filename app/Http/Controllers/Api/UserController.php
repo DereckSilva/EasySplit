@@ -51,7 +51,7 @@ class UserController extends Controller
         $user = $userPasswordRequest->only('id', 'email', 'password');
         $user = !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
         $userDTO = new UserDTO($user['name'], $user['email'], $userPasswordRequest->only('password'), $user['birthdate'], $user['phone_number']);
-        $user    = $this->userService->updatePassword(array_merge($user, $userDTO->password));
+        $user    = $this->userService->updatePassword(array_merge($user, [$userDTO->password]));
 
         if (empty($user)) {
             return response()->json([
@@ -71,8 +71,10 @@ class UserController extends Controller
     }
 
     public function delete(UserDeleteRequest $deleteRequest): JsonResponse {
-        $user = $deleteRequest->only('id', 'email');
-        $user = !empty($user['id']) ? $this->userService->findById($user['id']) : $this->userService->findByEmail($user['email']);
+        $userFieldsFromRequest = $deleteRequest->only('id', 'email');
+        $user                  = !empty($user['id'])
+            ? $this->userService->findById($userFieldsFromRequest['id'])
+            : $this->userService->findByEmail($userFieldsFromRequest['email']);
         $this->userService->delete($user['id']);
 
         return response()->json([

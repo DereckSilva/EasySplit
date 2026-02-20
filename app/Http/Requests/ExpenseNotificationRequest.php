@@ -45,6 +45,6 @@ class ExpenseNotificationRequest extends FormRequest
     }
 
     public function failedValidation(Validator $validator): HttpResponseException {
-        return $this->retornoExceptionErroRequest(false, 'Erro na atualização da notificação de uma conta', 422, $validator->errors());
+        return $this->returnExceptionErrorRequest(false, 'Erro na atualização da notificação de uma conta', 422, $validator->errors());
     }
 }

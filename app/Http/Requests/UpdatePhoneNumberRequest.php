@@ -36,6 +36,6 @@ class UpdatePhoneNumberRequest extends FormRequest
   }
 
   public function failedValidation(Validator $validator): HttpResponseException {
-      return $this->retornoExceptionErroRequest(false, 'Erro de validação na atualização do telefone do usuário', 422, $validator->errors());
+      return $this->returnExceptionErrorRequest(false, 'Erro de validação na atualização do telefone do usuário', 422, $validator->errors());
   }
 }

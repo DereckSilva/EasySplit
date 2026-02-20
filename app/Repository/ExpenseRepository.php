@@ -54,33 +54,46 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
     return $expense->toArray();
   }
 
-    public function all(int $idUser, bool $intermediary = false): array {
-      // VALIDAR AQUI
-      return Expense::chunk(100, function (Collection $expenses) use ($idUser, $intermediary) {
-            return $expenses->filter(function ($expense) use ($idUser, $intermediary) {
-                return !$intermediary
-                    ? $expense->payer_id == $idUser
-                    : collect(json_decode($expense->intermediaries, true))->filter(function ($intermediary) use ($idUser) {
-                        return $intermediary['id'] == $idUser;
-                    });
+  public function allExpenseFromOwner(int $idUser): array {
+    $expensesOwner = array();
+    Expense::chunk(100, function (Collection $expenses) use ($idUser, &$expensesOwner) {
+        $expensesOwner = $expenses->where('payer_id', $idUser)->toArray();
+    });
+
+    return $expensesOwner;
+  }
+
+  public function allExpenseFromIntermediary(int $idIntermediary): array {
+    $expensesIntermediary = array();
+    Expense::where('intermediary', true)
+        ->whereJsonContains('intermediaries', ['id' => $idIntermediary])
+        ->chunk(100, function (Collection $expenses) use (&$expensesIntermediary) {
+            $expensesIntermediary = collect($expenses->map(function($expense) {
+                return $expense->intermediaries;
+            }))->toArray();
         });
-    })->toArray();
+
+    return $expensesIntermediary;
   }
 
-  public function updateAllRegistersFromUser(string $column, string | int $emailOrId, array $attributes): bool {
-      DB::beginTransaction();
-      try {
-          // validar para o owner e intermediario (whereJsonContains)
-          Expense::where($column, $emailOrId)->update($attributes);
-          DB::commit();
-          return true;
-      } catch (PDOException $exception) {
-          DB::rollBack();
-          return false;
-      }
+  public function updateAllExpenseFromOwner(string $column, string | int $emailOrId, array $attributes): bool {
+    DB::beginTransaction();
+    try {
+      Expense::where($column, $emailOrId)->update($attributes);
+      DB::commit();
+      return true;
+    } catch (PDOException $exception) {
+      DB::rollBack();
+      return false;
+    }
   }
 
-  public function delete(int $id): bool {
+  public function updateAllRegistersFromIntermediary(string $column, int|string $emailOrId, array $attributes): bool
+  {
+    return false;
+  }
+
+    public function delete(int $id): bool {
         DB::beginTransaction();
         try {
             $expense = Expense::find($id);

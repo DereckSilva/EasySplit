@@ -68,10 +68,14 @@ class ExpenseService extends BaseService
         return empty($expense) ? [] : $this->afterFind($expense);
     }
 
-    public function findAll($intermediary = false): array {
-        return collect($this->expenseInterfaceRepository->all(Auth::user()->id, $intermediary))->map(function ($expense) {
+    public function findAllExpenseFromOwner(): array {
+        return collect($this->expenseInterfaceRepository->allExpenseFromOwner(Auth::user()->id))->map(function ($expense) {
             return $this->formatResponse($expense);
         })->toArray();
+    }
+
+    public function findAllExpenseFromIntermediary(): array {
+        return $this->expenseInterfaceRepository->allExpenseFromIntermediary(Auth::user()->id);
     }
 
     public function delete(int $id): bool {
@@ -155,7 +159,8 @@ class ExpenseService extends BaseService
 
         $dataUpdate       = !$intermediary ? ['receive_notification' => $data['notification']] : ['data->notification' => $data['notification']];
         $columnIdentifier = !$intermediary ? 'id' : 'data->id';
-        $this->expenseInterfaceRepository->updateAllRegistersFromUser($columnIdentifier, Auth::user()->id, $dataUpdate);
-
+        !$intermediary
+            ? $this->expenseInterfaceRepository->updateAllExpenseFromOwner($columnIdentifier, Auth::user()->id, $dataUpdate)
+            : $this->expenseInterfaceRepository->updateAllRegistersFromIntermediary($columnIdentifier, Auth::user()->id, $dataUpdate);
     }
 }

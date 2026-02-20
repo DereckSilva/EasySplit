@@ -4,7 +4,9 @@ namespace App\Repository\Interfaces;
 
 interface ExpenseInterfaceRepository
 {
-    public function all(int $idUser, bool $intermediary = false): array;
+    public function allExpenseFromOwner(int $idUser): array;
+
+    public function allExpenseFromIntermediary(int $idIntermediary): array;
 
     public function find(int $id): array;
 
@@ -14,5 +16,7 @@ interface ExpenseInterfaceRepository
 
     public function delete(int $id): bool;
 
-    public function updateAllRegistersFromUser(string $column, string | int $emailOrId, array $attributes): bool;
+    public function updateAllExpenseFromOwner(string $column, string | int $emailOrId, array $attributes): bool;
+
+    public function updateAllRegistersFromIntermediary(string $column, string | int $emailOrId, array $attributes): bool;
 }

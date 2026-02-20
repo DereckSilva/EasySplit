@@ -26,7 +26,7 @@ class UserService extends BaseService
         $userCreate      = $this->userInterfaceRepository->create($user);
 
         if (!is_array($userCreate)) {
-            return $this->retornoExceptionErroRequest(false, 'Houve um erro ao criar o usuário: ', 400, []);
+            return $this->returnExceptionErrorRequest(false, 'Houve um erro ao criar o usuário: ', 400, []);
         }
 
         $this->logInterfaceRepository->gravaLog($userCreate['id'], "Usuário Email: {$userCreate['email']} e Nome: {$userCreate['name']} criado com sucesso!");
@@ -48,7 +48,7 @@ class UserService extends BaseService
         $user = $this->userInterfaceRepository->updatePassword(['email' => $user['email'], 'password' => $user['password']]);
 
         if (!is_array($user)) {
-            return $this->retornoExceptionErroRequest(false, 'Houve um erro ao atualizar a senha do usuário', 404, []);
+            return $this->returnExceptionErrorRequest(false, 'Houve um erro ao atualizar a senha do usuário', 404, []);
         }
 
         $this->logInterfaceRepository->gravaLog($user['id'], "Usuário {$user['email']} teve a sua senha alterada com sucesso!");

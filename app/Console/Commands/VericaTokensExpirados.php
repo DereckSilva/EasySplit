@@ -26,6 +26,9 @@ class VericaTokensExpirados extends Command
      */
     public function handle()
     {
-        DB::table("personal_access_tokens")->where("expires_at", "<=", now())->delete();
+        DB::table("personal_access_tokens")
+            ->where("expires_at", "<=", now())
+            ->orWhereNull("expires_at")
+            ->delete();
     }
 }

@@ -2,12 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Trait\ResponseHttp;
-
 class ExpenseRequestUpdate extends ExpenseRequest
 {
-
-    use ResponseHttp;
 
     /**
      * Determine if the user is authorized to make this request.

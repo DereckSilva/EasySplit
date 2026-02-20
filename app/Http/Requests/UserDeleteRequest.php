@@ -45,6 +45,6 @@ class UserDeleteRequest extends FormRequest
     }
 
     public function failedValidation(Validator $validator): HttpResponseException {
-        return $this->retornoExceptionErroRequest(false, 'Erro de validação no cadastro do usuário', 422, $validator->errors());
+        return $this->returnExceptionErrorRequest(false, 'Erro de validação no cadastro do usuário', 422, $validator->errors());
     }
 }

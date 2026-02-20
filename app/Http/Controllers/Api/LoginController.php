@@ -19,15 +19,15 @@ class LoginController
 
         $user = $request->only('email', 'password');
         if (!Auth::attempt($user)) {
-            $this->retornoExceptionErroRequest(false, 'Usuário não autorizado', 403, []);
+            $this->returnExceptionErrorRequest(false, 'Usuário não autorizado', 403, []);
         }
 
-        $datTime = Carbon::now();
-        $token = $request->user()->createToken('Token Usuario', ['*'], $datTime->addDays())->plainTextToken;
+        $dateTime  = Carbon::now();
+        $userToken = $request->user()->createToken('Token Usuario', ['*'], $dateTime->addDays())->plainTextToken;
 
         return response()->json([
             'success'    => true,
-            'token'      => $token,
+            'token'      => $userToken,
             'message'    => 'Usuário autenticado com sucesso'
         ]);
     }

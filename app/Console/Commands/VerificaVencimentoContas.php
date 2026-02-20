@@ -46,22 +46,20 @@ class VerificaVencimentoContas extends Command
         collect($expenses)->each(function ($expense) {
             $maturity    = Carbon::parse($expense['maturity']);
             $currentDate = Carbon::now();
-            $diff        = (int)$currentDate->diffInDays($maturity->toString());
+            $diffDays    = (int)$currentDate->diffInDays($maturity->toString());
 
             $exp  = $this->expenseModel::find($expense['id']);
             $user = $this->userModel::find($exp['payer_id']);
 
-            // realiza o envio da notificacao para o dono da conta - (contas não pagas)
             if (!$exp->paid) {
-                $this->sendNotification($user, $exp, $diff);
+                $this->sendNotification($user, $exp, $diffDays);
             }
 
             $intermediaries  = json_decode($exp->intermediaries, true);
-            collect($intermediaries)->each(function ($intermediary) use ($exp, $diff){
-                // percorre os intermediários da conta - (envia notificação para quem ainda não pagou)
+            collect($intermediaries)->each(function ($intermediary) use ($exp, $diffDays){
                 if (!$intermediary['paid']) {
                     $user = $this->userModel::where('email', '=', $intermediary['email']);
-                    $this->sendNotification($user, $exp, $diff);
+                    $this->sendNotification($user, $exp, $diffDays);
                 }
             });
         });

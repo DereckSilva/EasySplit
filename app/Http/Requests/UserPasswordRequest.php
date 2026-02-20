@@ -58,6 +58,6 @@ class UserPasswordRequest extends FormRequest
     }
 
     public function failedValidation(Validator $validator): HttpResponseException {
-        return $this->retornoExceptionErroRequest(false, '', 404, $validator->errors());
+        return $this->returnExceptionErrorRequest(false, '', 404, $validator->errors());
     }
 }

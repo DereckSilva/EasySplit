@@ -10,18 +10,6 @@ class IntermediaryRepository implements IntermediaryInterfaceRepository
 {
     protected string $model = 'Intermediary';
 
-    public function all(): array
-    {
-        $intermediaries = Intermediary::all();
-        return empty($intermediaries) ? [] : $intermediaries->toArray();
-    }
-
-    public function find(string $column, string | int $value): array
-    {
-        $intermediary = Intermediary::where($column, $value)->first()->toArray();
-        return empty($intermediary) ? [] : $intermediary[0];
-    }
-
     public function create(array $data): array | bool
     {
         DB::beginTransaction();
@@ -34,5 +22,20 @@ class IntermediaryRepository implements IntermediaryInterfaceRepository
             DB::rollBack();
             return false;
         }
+    }
+
+    public function find(string $column, string | int $value): array
+    {
+        $intermediary = Intermediary::where($column, $value)->first()->toArray();
+        return empty($intermediary) ? [] : $intermediary[0];
+    }
+
+    public function all(): array
+    {
+        $allIntermediaries = [];
+        Intermediary::chunk(100, function ($intermediary) use (&$allIntermediaries) {
+            $allIntermediaries = $intermediary->toArray();
+        });
+        return empty($allIntermediaries) ? [] : $allIntermediaries;
     }
 }

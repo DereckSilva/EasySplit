@@ -115,12 +115,20 @@ class ExpenseController extends Controller
         ], ResponseAlias::HTTP_NO_CONTENT);
     }
 
-    public function all(): JsonResponse {
+    public function allOwner(): JsonResponse {
         return response()->json([
             'status' => true,
             'message' => 'Lista de contas',
-            'data' => $this->expenseService->findAll()
+            'data' => $this->expenseService->findAllExpenseFromOwner()
         ], ResponseAlias::HTTP_OK);
+    }
+
+    public function allIntermediary(): JsonResponse {
+        return response()->json([
+            'status' => true,
+            'message' => 'Lista de contas dos intermediarios',
+            'data' => $this->expenseService->findAllExpenseFromIntermediary()
+        ]);
     }
 
     public function importExpenseFromCSV(ImportExpenseRequest $request): JsonResponse {
@@ -149,21 +157,24 @@ class ExpenseController extends Controller
             return $this->formatExpense($expense);
         }
         collect($expense['intermediaries'])->each(function ($intermediary) {
-            $keys = array_keys($intermediary);
-            if (count($keys) == 1 && (end($keys) == 'id' || end($keys) == 'email')) {
-                $field = end($keys);
-                $intermediaryFNF = $this->intermediaryService->findIntermediary($field, $intermediary[$field]);
+            $identifierIntermediary = array_keys($intermediary);
+
+            if (count($identifierIntermediary) == 1 && in_array(end($identifierIntermediary), ['id', 'email'])) {
+                $fieldIdentifier = end($identifierIntermediary);
+                $intermediaryFNF = $this->intermediaryService->findIntermediary($fieldIdentifier, $intermediary[$fieldIdentifier]);
+
                 if (empty($intermediaryFNF)) {
-                    $this->retornoExceptionErroRequest(false,
-                        "O {$field} do intermediário informado ({$intermediary[$field]}) não existe. Por favor, informe o email e telefone para cadastro.",
+                    $this->returnExceptionErrorRequest(false,
+                        "O {$fieldIdentifier} do intermediário informado ({$intermediary[$fieldIdentifier]}) não existe. Por favor, informe o email e telefone para cadastro.",
                         404, []);
                 }
             }
 
-            if (count($keys) == 2) {
+            if (count($identifierIntermediary) == 2) {
                 $intermediaryFNF = $this->intermediaryService->findIntermediary('email', $intermediary['email']);
+
                 if (!empty($intermediaryFNF)) {
-                    $this->retornoExceptionErroRequest(false,
+                    $this->returnExceptionErrorRequest(false,
                         "O email do intermediário informado ({$intermediary['email']}) já foi cadastrado. Por favor, informe apenas o id ou email para cadastro da conta.",
                         404, []);
                 }

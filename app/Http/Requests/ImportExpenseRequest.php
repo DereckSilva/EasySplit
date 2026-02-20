@@ -41,6 +41,6 @@ class ImportExpenseRequest extends FormRequest
 
 
     public function failedValidation(Validator $validator): HttpResponseException {
-        return $this->retornoExceptionErroRequest(false, 'Erro de validação', 400, $validator->errors());
+        return $this->returnExceptionErrorRequest(false, 'Erro de validação', 400, $validator->errors());
     }
 }

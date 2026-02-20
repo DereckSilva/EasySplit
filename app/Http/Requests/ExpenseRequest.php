@@ -93,6 +93,6 @@ class ExpenseRequest extends FormRequest
     }
 
     public function failedValidation(Validator $validator): HttpResponseException {
-        return $this->retornoExceptionErroRequest(false, 'Erro na criação de uma despesa', 422, $validator->errors());
+        return $this->returnExceptionErrorRequest(false, 'Erro na criação de uma despesa', 422, $validator->errors());
     }
 }

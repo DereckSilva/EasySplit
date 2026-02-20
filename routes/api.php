@@ -27,7 +27,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     /* Expense */
     Route::prefix('expense')->group(function () {
         Route::post('', [ExpenseController::class, 'create']);
-        Route::get('', [ExpenseController::class, 'all']);
+        Route::get('/owner', [ExpenseController::class, 'allOwner']);
+        Route::get('/intermediary', [ExpenseController::class, 'allIntermediary']);
         Route::get('/{id}', [ExpenseController::class, 'show']);
         Route::put('', [ExpenseController::class, 'update']);
         Route::delete('/{id}', [ExpenseController::class, 'remove']);
