@@ -90,6 +90,7 @@ class ExpenseRepository implements ExpenseInterfaceRepository {
 
   public function updateAllRegistersFromIntermediary(string $column, int|string $emailOrId, array $attributes): bool
   {
+    // continuar alteração
     return false;
   }
 

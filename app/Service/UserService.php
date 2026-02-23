@@ -3,11 +3,12 @@
 namespace App\Service;
 
 use App\DTO\UserDTO;
-use App\Repository\Interfaces\LogInterfaceRepository;
+use App\LogActions;
 use App\Repository\Interfaces\UserInterfaceRepository;
 use App\Repository\NotificationRepository;
 use App\Trait\ResponseHttp;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Support\Facades\Auth;
 
 class UserService extends BaseService
 {
@@ -17,7 +18,7 @@ class UserService extends BaseService
     public function __construct(
         protected UserInterfaceRepository $userInterfaceRepository,
         protected NotificationRepository $notificationRepository,
-        protected LogInterfaceRepository $logInterfaceRepository
+        protected LogService $logService
     ){}
 
     public function createUser(UserDTO $user): array | HttpResponseException {
@@ -29,17 +30,18 @@ class UserService extends BaseService
             return $this->returnExceptionErrorRequest(false, 'Houve um erro ao criar o usuário: ', 400, []);
         }
 
-        $this->logInterfaceRepository->gravaLog($userCreate['id'], "Usuário Email: {$userCreate['email']} e Nome: {$userCreate['name']} criado com sucesso!");
+        $this->logService->gravaLog($userCreate['id'], "Usuário Email: {$userCreate['email']} e Nome: {$userCreate['name']} criado com sucesso!", LogActions::CREATE, '', json_encode($userCreate));
 
         return $userCreate;
     }
 
     public function updateUser(int $id, array $user): array | HttpResponseException {
 
+        $this->logService->setOldValue(json_encode($this->userInterfaceRepository->find($id, 'id')));
         $userUp                  = $this->userInterfaceRepository->update($id, $user);
         $userUp['notifications'] = $this->notificationRepository->findNotificationFromUser($id);
 
-        $this->logInterfaceRepository->gravaLog($userUp['id'], "Usuário {$userUp['email']} foi atualizado!");
+        $this->logService->gravaLog($userUp['id'], "Usuário {$userUp['email']} foi atualizado!", LogActions::UPDATE, $this->logService->getOldValue(), json_encode($userUp));
 
         return $userUp;
     }
@@ -51,7 +53,7 @@ class UserService extends BaseService
             return $this->returnExceptionErrorRequest(false, 'Houve um erro ao atualizar a senha do usuário', 404, []);
         }
 
-        $this->logInterfaceRepository->gravaLog($user['id'], "Usuário {$user['email']} teve a sua senha alterada com sucesso!");
+        $this->logService->gravaLog($user['id'], "Usuário {$user['email']} teve a sua senha alterada com sucesso!", LogActions::UPDATE);
 
         return $user;
     }
@@ -65,7 +67,9 @@ class UserService extends BaseService
     }
 
     public function delete(int $id): bool {
+        $this->logService->setOldValue(json_encode($this->userInterfaceRepository->find($id, 'id')));
         $this->userInterfaceRepository->delete($id);
+        $this->logService->gravaLog(Auth::user()->id, 'Conta removida com sucesso', LogActions::DELETE, $this->logService->getOldValue());
         return true;
     }
 

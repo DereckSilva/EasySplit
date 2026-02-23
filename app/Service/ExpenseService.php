@@ -5,8 +5,8 @@ namespace App\Service;
 use App\DTO\ExpenseDTO;
 use App\DTO\IntermediaryDTO;
 use App\DTO\UserDTO;
+use App\LogActions;
 use App\Repository\Interfaces\ExpenseInterfaceRepository;
-use App\Repository\Interfaces\LogInterfaceRepository;
 use App\Repository\Interfaces\UserInterfaceRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -18,25 +18,23 @@ class ExpenseService extends BaseService
         private ExpenseInterfaceRepository $expenseInterfaceRepository,
         private UserInterfaceRepository    $userInterfaceRepository,
         private IntermediaryService $intermediaryService,
-        private LogInterfaceRepository $logInterfaceRepository
+        private LogService $logService
     ){}
 
     public function createExpense(ExpenseDTO $expense): array {
 
         // seta a data de vencimento
-        $paymentDate          = Carbon::parse($expense->paymentDate);
-        $month                = $paymentDate->month + $expense->parcels;
-        $expense->maturity    = Carbon::parse("{$paymentDate->year}-{$month}-{$paymentDate->day}")->toDateString();
-        $expense->paymentDate = $paymentDate->toDateString();
+        $this->setDateOfExpense($expense);
 
-        // intermediários
+        // intermediaries
         $intermediaries = json_decode($expense->intermediaries, true);
         if ($expense->intermediary && !empty($intermediaries)) {
             collect($intermediaries)->each(function ($intermediary, $key) use ($expense, &$intermediaries) {
-                $keys = array_keys($intermediary);
-                $idIntermediary = count($keys) == 1
-                    ? $this->intermediaryService->findIntermediary($keys[0], $intermediary[$keys[0]])['id']
-                    : $this->createIntermediaryFromExpense(new IntermediaryDTO($intermediary['email'], $intermediary['phone_number']))['id'];
+                $intermediaryIdentifiers = array_keys($intermediary);
+                $intermediaryDTO = new IntermediaryDTO($intermediary['email'], $intermediary['phone_number']);
+                $idIntermediary = count($intermediaryIdentifiers) == 1
+                    ? $this->intermediaryService->findIntermediary($intermediaryIdentifiers[0], $intermediary[$intermediaryIdentifiers[0]])['id']
+                    : $this->intermediaryService->createIntermediary($intermediaryDTO->toArray())['id'];
 
 
                 $intermediaries[$key] = [
@@ -55,10 +53,10 @@ class ExpenseService extends BaseService
     }
 
     public function updateExpense(ExpenseDTO $expense): array {
-        $expense->paymentDate = Carbon::parse($expense->paymentDate)->toDateString();
-        $expense->maturity    = Carbon::parse($expense->maturity)->toDateString();
+        $this->setDateOfExpense($expense);
 
         $expense = $this->beforeUpdate($expense->toArray());
+        $this->logService->setOldValue(json_encode($this->findExpense($expense['id'])));
         $expense = $this->expenseInterfaceRepository->update($expense['id'], $expense);
         return $this->afterUpdate($expense);
     }
@@ -83,12 +81,8 @@ class ExpenseService extends BaseService
         if (!$removeExp) {
             return false;
         }
-        $this->logInterfaceRepository->gravaLog(Auth::user()->id, "Conta removida com sucesso pelo usuário " . Auth::user()->name);
+        $this->logService->gravaLog(Auth::user()->id, "Conta removida com sucesso pelo usuário " . Auth::user()->name, LogActions::DELETE, $this->logService->getOldValue());
         return true;
-    }
-
-    public function createIntermediaryFromExpense(IntermediaryDTO $intermediaryDTO): array {
-        return $this->intermediaryService->createIntermediary($intermediaryDTO->toArray());
     }
 
     public function expenseNotification(array $data): bool {
@@ -121,7 +115,7 @@ class ExpenseService extends BaseService
 
     public function afterCreate(array $data): array
     {
-        $this->logInterfaceRepository->gravaLog(Auth::user()->id, "Conta criada com sucesso para o usuário " . Auth::user()->name);
+        $this->logService->gravaLog(Auth::user()->id, "Conta criada com sucesso para o usuário " . Auth::user()->name, LogActions::CREATE, '', json_encode($data));
         return $this->formatResponse($data);
     }
 
@@ -132,7 +126,7 @@ class ExpenseService extends BaseService
 
     public function afterUpdate(array $data): array
     {
-        $this->logInterfaceRepository->gravaLog(Auth::user()->id, "Conta atualizada com sucesso para o usuário " . Auth::user()->name);
+        $this->logService->gravaLog(Auth::user()->id, "Conta atualizada com sucesso para o usuário " . Auth::user()->name, LogActions::UPDATE, $this->logService->getOldValue(), json_encode($data));
         return $this->formatResponse($data);
     }
 
@@ -162,5 +156,12 @@ class ExpenseService extends BaseService
         !$intermediary
             ? $this->expenseInterfaceRepository->updateAllExpenseFromOwner($columnIdentifier, Auth::user()->id, $dataUpdate)
             : $this->expenseInterfaceRepository->updateAllRegistersFromIntermediary($columnIdentifier, Auth::user()->id, $dataUpdate);
+    }
+
+    private function setDateOfExpense(ExpenseDTO $expense): void {
+        $paymentDate          = Carbon::parse($expense->paymentDate);
+        $month                = $paymentDate->month + $expense->parcels;
+        $expense->maturity    = Carbon::parse("{$paymentDate->year}-{$month}-{$paymentDate->day}")->toDateString();
+        $expense->paymentDate = $paymentDate->toDateString();
     }
 }

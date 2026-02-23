@@ -80,9 +80,9 @@ class ExpenseController extends Controller
     }
 
     public function update(ExpenseRequestUpdate $expenseRequestUpdate): JsonResponse {
-        $expense = $this->validatedData($expenseRequestUpdate->all());
+        $expense    = $this->validatedData($expenseRequestUpdate->all());
         $expenseDto = new ExpenseDTO($expense);
-        $expense = $this->expenseService->updateExpense($expenseDto);
+        $expense    = $this->expenseService->updateExpense($expenseDto);
         return response()->json([
             'status' => true,
             'message' => 'Conta atualizada com sucesso',
@@ -191,9 +191,10 @@ class ExpenseController extends Controller
             'price_total'          => $expense['price_total'],
             'parcels'              => $expense['parcels'],
             'payer_id'             => $expense['payer_id'],
-            'payment_date'         => Carbon::parse($expense['payment_date'])->format('d/m/Y'),
+            'payment_date'         => $expense['payment_date'],
             'intermediary'         => $expense['intermediary'],
             'intermediaries'       => $expense['intermediaries'],
+            'receive_notification' => $expense['receive_notification']
         ];
         return key_exists('id', $expense) ? array_merge(['id' => $expense['id']], $expenseValidated) : $expenseValidated;
     }

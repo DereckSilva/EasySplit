@@ -24,8 +24,8 @@ class ExpenseDTO
         $this->payerId             = $data['payer_id'];
         $this->paymentDate         = $data['payment_date'];
         $this->intermediary        = $data['intermediary'];
-        $this->intermediaries      = $data['intermediaries'];
-        $this->maturity            = $data['maturity'];
+        $this->intermediaries      = json_encode($data['intermediaries']);
+        $this->maturity            = isset($data['maturity']) ? $data['maturity'] : '';
         $this->receiveNotification = $data['receive_notification'];
     }
 
