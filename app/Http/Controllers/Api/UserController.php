@@ -25,7 +25,7 @@ class UserController extends Controller
         $userDTO   = new UserDTO($user['name'], $user['email'], $user['password'], $birthdate, $user['phone_number']);
         $user      = $this->userService->createUser($userDTO);
 
-        //EnviaEmail::dispatchSync($user['name'], $user['email']);
+        EnviaEmail::dispatchSync($user['name'], $user['email']);
 
         return response()->json([
             'status' => true,
@@ -60,8 +60,7 @@ class UserController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        //EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email'], true);
-
+        EnviaEmail::dispatchSync($user['data']['name'], $user['data']['email'], true);
 
         return response()->json([
             'status' => true,

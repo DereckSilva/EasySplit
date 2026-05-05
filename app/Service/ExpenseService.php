@@ -10,9 +10,13 @@ use App\Repository\Interfaces\ExpenseInterfaceRepository;
 use App\Repository\Interfaces\UserInterfaceRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Trait\ResponseHttp;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ExpenseService extends BaseService
 {
+
+    use ResponseHttp;
 
     public function __construct(
         private ExpenseInterfaceRepository $expenseInterfaceRepository,
@@ -21,7 +25,7 @@ class ExpenseService extends BaseService
         private LogService $logService
     ){}
 
-    public function createExpense(ExpenseDTO $expense): array {
+    public function createExpense(ExpenseDTO $expense): array | HttpResponseException {
 
         // seta a data de vencimento
         $this->setDateOfExpense($expense);
@@ -49,15 +53,25 @@ class ExpenseService extends BaseService
         $expense->intermediaries = json_encode($intermediaries);
         $expense = $this->beforeCreate($expense->toArray());
         $expense = $this->expenseInterfaceRepository->create($expense);
+
+        if (!is_array($expense)) {
+            return $this->returnExceptionErrorRequest(false, 'Houve um erro ao criar a conta do usuário', 404, []);
+        }
+
         return $this->afterCreate($expense);
     }
 
-    public function updateExpense(ExpenseDTO $expense): array {
+    public function updateExpense(ExpenseDTO $expense): array | HttpResponseException {
         $this->setDateOfExpense($expense);
 
         $expense = $this->beforeUpdate($expense->toArray());
         $this->logService->setOldValue(json_encode($this->findExpense($expense['id'])));
         $expense = $this->expenseInterfaceRepository->update($expense['id'], $expense);
+
+        if (!is_array($expense)) {
+            return $this->returnExceptionErrorRequest(false, 'Houve um erro ao atualizar a conta do usuário', 404, []);
+        }
+
         return $this->afterUpdate($expense);
     }
 

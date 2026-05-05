@@ -29,11 +29,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('', [ExpenseController::class, 'create']);
         Route::get('/owner', [ExpenseController::class, 'allOwner']);
         Route::get('/intermediary', [ExpenseController::class, 'allIntermediary']);
+        Route::get('/import', [ExpenseController::class, 'importHeader']);
         Route::get('/{id}', [ExpenseController::class, 'show']);
         Route::put('', [ExpenseController::class, 'update']);
         Route::delete('/{id}', [ExpenseController::class, 'remove']);
         Route::put('/notification', [ExpenseController::class, 'expenseNotification']);
-        Route::post('/import', [ExpenseController::class, 'importExpenseFromCSV']);
+        Route::post('/upload', [ExpenseController::class, 'uploadExpenseFromCSV']);
     });
 
     /* Notifications */

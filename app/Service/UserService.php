@@ -39,6 +39,11 @@ class UserService extends BaseService
 
         $this->logService->setOldValue(json_encode($this->userInterfaceRepository->find($id, 'id')));
         $userUp                  = $this->userInterfaceRepository->update($id, $user);
+
+        if (!is_array($userUp)) {
+            return $this->returnExceptionErrorRequest(false, 'Houve um erro ao atualizar um usuário.', 404, []);
+        }
+
         $userUp['notifications'] = $this->notificationRepository->findNotificationFromUser($id);
 
         $this->logService->gravaLog($userUp['id'], "Usuário {$userUp['email']} foi atualizado!", LogActions::UPDATE, $this->logService->getOldValue(), json_encode($userUp));
@@ -66,9 +71,14 @@ class UserService extends BaseService
         return $this->userInterfaceRepository->find($id);
     }
 
-    public function delete(int $id): bool {
+    public function delete(int $id): bool | HttpResponseException {
         $this->logService->setOldValue(json_encode($this->userInterfaceRepository->find($id, 'id')));
-        $this->userInterfaceRepository->delete($id);
+        $userDel = $this->userInterfaceRepository->delete($id);
+
+        if (!$userDel) {
+            return $this->returnExceptionErrorRequest(false, 'Houve um erro ao excluir o usuário', 404, []);
+        }
+
         $this->logService->gravaLog(Auth::user()->id, 'Conta removida com sucesso', LogActions::DELETE, $this->logService->getOldValue());
         return true;
     }

@@ -4,9 +4,12 @@ namespace App\Service;
 
 use App\LogActions;
 use App\Repository\Interfaces\LogInterfaceRepository;
+use App\Trait\ResponseHttp;
 
 class LogService
 {
+
+    use ResponseHttp;
 
     protected string $oldValue = '';
 
@@ -15,7 +18,12 @@ class LogService
     ){}
 
     public function gravaLog(int $user, string $description, LogActions $action, string $oldValue = '', string $newValue = ''): void {
-        $this->logInterfaceRepository->gravaLog($user, $description, $action, $oldValue, $newValue);
+        $log = $this->logInterfaceRepository->gravaLog($user, $description, $action, $oldValue, $newValue);
+
+        if (!is_array($log)) {
+            $this->returnExceptionErrorRequest(false, 'Houve um erro ao gravar o log', 404, []);
+        }
+
         $this->setOldValue('');
     }
 

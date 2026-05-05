@@ -2,15 +2,21 @@
 
 namespace App\Trait;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\AbstractCsv;
 use League\Csv\Reader;
 use League\Csv\Statement;
+use League\Csv\Writer;
+use Symfony\Component\HttpFoundation\Response;
 
 trait ImportCSV {
 
+    use ResponseHttp;
+
     protected $data;
 
-    public function import($header, $fileName, $content, $delimiter = ',', $totalLines = 0) {
+    public function uplaod($header, $fileName, $content, $delimiter = ',', $totalLines = 0) {
 
         // salvando arquivo temporariamente
         Storage::disk('public')->put($fileName, $content);
@@ -18,6 +24,8 @@ trait ImportCSV {
         $csv = Reader::from(Storage::disk('public')->path($fileName));
         $csv->setHeaderOffset(0);
 
+
+        dd($content);
         // realiza validação do header
 
 
@@ -27,20 +35,14 @@ trait ImportCSV {
         if (!preg_match($regex, $csv->getDelimiter())) {
 
             // ajustar
-            return response()->json([
-                'status' => false,
-                'message' => "O delimitador do arquivo CSV precisa ser ({$delimiter})."
-            ], 400);
+            return $this->returnExceptionErrorRequest(false, "O delimitador do arquivo CSV precisa ser ({$delimiter})", Response::HTTP_BAD_REQUEST, false);
         }
 
         $csv->setEscape('');
         if ($csv->count() > $totalLines) {
 
             // ajustar
-            return response()->json([
-                'status' => false,
-                'message' => 'O CSV deve possuir apenas 25 linhas de dados sem considerar o CABEÇALHO.'
-            ], 400);
+            return $this->returnExceptionErrorRequest(false, "O CSV deve possuir apenas 25 linhas de dados sem considerar o CABEÇALHO.", Response::HTTP_BAD_REQUEST, false);
         }
 
 
@@ -61,6 +63,10 @@ trait ImportCSV {
         }
 
         Storage::disk('public')->delete($fileName);
+    }
+
+    public function importHeaders(array $headers) {
+        return  Writer::fromString(implode(',', $headers));
     }
 
 }

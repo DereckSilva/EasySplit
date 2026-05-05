@@ -12,7 +12,7 @@ class LogRepository implements LogInterfaceRepository {
 
   protected $model = 'Logs';
 
-  public function gravaLog(int $user, string $description, LogActions $action, string $oldValue = '', string $newValue = ''): void {
+  public function gravaLog(int $user, string $description, LogActions $action, string $oldValue = '', string $newValue = ''): array | bool {
     DB::beginTransaction();
     try {
       $log = Log::create(['user_id' => $user,
@@ -23,8 +23,10 @@ class LogRepository implements LogInterfaceRepository {
       ]);
       $log->save();
       DB::commit();
+      return $log->toArray();
     } catch (PDOException $exception) {
       DB::rollBack();
+      return false;
     }
   }
 

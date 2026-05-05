@@ -23,12 +23,7 @@ class NotificationRepository implements NotificationInterfaceRepository {
       $notification->save();
 
       DB::commit();
-      return [
-        'status'     => true,
-        'data'       => $notification->toArray(),
-        'message'    => 'Notificação lida com sucesso',
-        'statusCode' => 200
-      ];
+      return $notification->toArray();
     } catch (PDOException $exception) {
       DB::rollBack();
       return false;

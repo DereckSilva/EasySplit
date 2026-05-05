@@ -11,9 +11,9 @@ use App\Service\ExpenseService;
 use App\Service\IntermediaryService;
 use App\Trait\ImportCSV;
 use App\Trait\ResponseHttp;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 
 class ExpenseController extends Controller
@@ -131,13 +131,10 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function importExpenseFromCSV(ImportExpenseRequest $request): JsonResponse {
+    public function uploadExpenseFromCSV(ImportExpenseRequest $request): JsonResponse {
 
-        $teste = $this->expenseService->createExpense();
-        return response()->json(['message' => 'salve', 'data' => $teste], 201);
-        // montar qual o cabeçalho para validação dos dados da despesa
 
-        $this->import(array(), $request->file('expenseCSV')->getFilename(), $request->file('expenseCSV')->getContent(), ';', 26);
+        $this->uplaod(['DESCRICAO', 'VALOR TOTAL', 'PAGADOR', 'DATA DO PAGAMENTO', 'EXISTE INTERMEDIÁRIO?', 'INTERMEDIÁRIOS', 'PARCELAS'], $request->file('expenseCSV')->getFilename(), $request->file('expenseCSV')->getContent(), ';', 26);
 
         //
 
@@ -147,6 +144,17 @@ class ExpenseController extends Controller
 
     private function validatedRow(array $row): void {
 
+    }
+
+    public function importHeader(): Response | HttpResponseException {
+
+        $csv = $this->importHeaders(['DESCRICAO', 'VALOR TOTAL', 'PAGADOR', 'DATA DO PAGAMENTO', 'EXISTE INTERMEDIÁRIO?', 'INTERMEDIÁRIOS', 'PARCELAS']);
+
+        return response(
+            $csv->toString(),
+            ResponseAlias::HTTP_OK,
+            ['Content-Type' => 'text/csv', 'Content-Disposition' => 'attachment; filename="contas.csv"']
+        );
     }
 
 
@@ -162,12 +170,6 @@ class ExpenseController extends Controller
             if (count($identifierIntermediary) == 1 && in_array(end($identifierIntermediary), ['id', 'email'])) {
                 $fieldIdentifier = end($identifierIntermediary);
                 $intermediaryFNF = $this->intermediaryService->findIntermediary($fieldIdentifier, $intermediary[$fieldIdentifier]);
-
-                if (empty($intermediaryFNF)) {
-                    $this->returnExceptionErrorRequest(false,
-                        "O {$fieldIdentifier} do intermediário informado ({$intermediary[$fieldIdentifier]}) não existe. Por favor, informe o email e telefone para cadastro.",
-                        404, []);
-                }
             }
 
             if (count($identifierIntermediary) == 2) {
