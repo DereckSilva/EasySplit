@@ -16,11 +16,10 @@ jobs:
       - name: Configurar o PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2' # Altere para a versão do PHP do seu projeto
-          extensions: mbstring, intl, pdo, sqlite3 # Adicione as extensões que seu projeto usa
+          php-version: '8.2'
 
       - name: Instalar dependências com o Composer
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-suggest
     
       - name: Executar o phpunit
         run: ./vendor/bin/phpunit
