@@ -18,8 +18,14 @@ jobs:
         with:
           php-version: '8.4'
 
+      - name: Copiar arquivo .env de teste
+        run: cp .env.example .env
+
       - name: Instalar dependências com o Composer
         run: composer install --prefer-dist --no-suggest
+
+      - name: Gerar Application Key
+        run: php artisan key:generate
     
       - name: Executar o phpunit
         run: ./vendor/bin/phpunit
