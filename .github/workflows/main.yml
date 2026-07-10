@@ -22,5 +22,5 @@ jobs:
       - name: Instalar dependências com o Composer
         run: composer install --prefer-dist --no-progress --no-suggest
     
-      - name: Exxecutar o phpunit
-        run: ./vender/bin/phpunit
+      - name: Executar o phpunit
+        run: ./vendor/bin/phpunit
