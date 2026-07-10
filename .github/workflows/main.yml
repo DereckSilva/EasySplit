@@ -1,0 +1,26 @@
+name: Executar testes com PHPUnit
+
+on:
+  push:
+    branches:
+      - "main"
+      - "master"
+jobs:
+  run-phpunit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar o PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2' # Altere para a versão do PHP do seu projeto
+          extensions: mbstring, intl, pdo, sqlite3 # Adicione as extensões que seu projeto usa
+
+      - name: Instalar dependências com o Composer
+        run: composer install --prefer-dist --no-progress --no-suggest
+    
+      - name: Exxecutar o phpunit
+        run: ./vender/bin/phpunit
